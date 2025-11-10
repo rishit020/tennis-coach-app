@@ -1,98 +1,177 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import React from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { Card } from '@/components/ui';
+import { colors } from '@/constants/colors';
+import { layout } from '@/constants/layout';
+import { typography } from '@/constants/typography';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const handleBookLesson = () => {
+    router.push('/(tabs)/coaching');
+  };
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  return (
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <View style={styles.content}>
+        {/* Info Card */}
+        <Card style={styles.infoCard}>
+          <Text style={styles.infoText}>
+            Upload your tennis videos and receive detailed feedback within 24 hours.
+          </Text>
+        </Card>
+
+        {/* Feature Cards */}
+        <TouchableOpacity onPress={handleBookLesson} activeOpacity={0.8}>
+          <Card style={styles.featureCard}>
+            <View style={styles.featureContent}>
+              <View style={styles.featureIcon}>
+                <Ionicons name="people" size={28} color={colors.neutral.white} />
+              </View>
+              <View style={styles.featureText}>
+                <Text style={styles.featureTitle}>1-on-1 Coaching</Text>
+                <Text style={styles.featureDescription}>
+                  Book private lessons with USTA certified coaches for personalized training.
+                </Text>
+              </View>
+            </View>
+          </Card>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={handleBookLesson} activeOpacity={0.8}>
+          <Card style={styles.featureCard}>
+            <View style={styles.featureContent}>
+              <View style={styles.featureIcon}>
+                <Ionicons name="star" size={28} color={colors.neutral.white} />
+              </View>
+              <View style={styles.featureText}>
+                <Text style={styles.featureTitle}>Expert Coaches</Text>
+                <Text style={styles.featureDescription}>
+                  Learn from nationally ranked players with 9+ years of experience.
+                </Text>
+              </View>
+            </View>
+          </Card>
+        </TouchableOpacity>
+
+        {/* Statistics Row */}
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>100+</Text>
+            <Text style={styles.statLabel}>Tournament Wins</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>9+</Text>
+            <Text style={styles.statLabel}>Years Experience</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>100%</Text>
+            <Text style={styles.statLabel}>Satisfaction Rate</Text>
+          </View>
+        </View>
+
+        {/* Book a Lesson Button */}
+        <TouchableOpacity style={styles.bookButton} onPress={handleBookLesson} activeOpacity={0.8}>
+          <Ionicons name="videocam" size={20} color={colors.neutral.white} style={{ marginRight: layout.spacing.sm }} />
+          <Text style={styles.bookButtonText}>Book a Lesson</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+    backgroundColor: colors.neutral.background,
+  },
+  content: {
+    paddingTop: 60,
+    paddingHorizontal: layout.spacing.lg,
+    paddingBottom: layout.spacing.xl,
+  },
+  infoCard: {
+    marginBottom: layout.spacing.lg,
+    borderRadius: layout.borderRadius.card,
+    alignItems: 'center',
+    ...layout.shadows.md,
+  },
+  infoText: {
+    fontSize: typography.fontSize.base,
+    color: colors.neutral.gray[900],
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  featureCard: {
+    marginBottom: layout.spacing.lg,
+    borderRadius: layout.borderRadius.card,
+    ...layout.shadows.md,
+  },
+  featureContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  featureIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.primary.green,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: layout.spacing.lg,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  featureText: {
+    flex: 1,
+  },
+  featureTitle: {
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.neutral.gray[900],
+    marginBottom: layout.spacing.xs,
+  },
+  featureDescription: {
+    fontSize: typography.fontSize.base,
+    color: colors.neutral.gray[500],
+    lineHeight: 22,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: layout.spacing.xl,
+    marginBottom: layout.spacing.xl,
+    paddingHorizontal: layout.spacing.md,
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statNumber: {
+    fontSize: typography.fontSize['3xl'],
+    fontWeight: typography.fontWeight.bold,
+    color: colors.primary.green,
+    marginBottom: layout.spacing.xs,
+  },
+  statLabel: {
+    fontSize: typography.fontSize.sm,
+    color: colors.neutral.gray[900],
+    textAlign: 'center',
+  },
+  bookButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary.green,
+    paddingVertical: layout.spacing.md + 4,
+    paddingHorizontal: layout.spacing.xl,
+    borderRadius: layout.borderRadius.full,
+    marginTop: layout.spacing.md,
+    ...layout.shadows.sm,
+  },
+  bookButtonText: {
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.neutral.white,
   },
 });
