@@ -4,7 +4,7 @@ import { layout } from '@/constants/layout';
 import { typography } from '@/constants/typography';
 import { useKeyboardDismiss } from '@/hooks/use-keyboard-dismiss';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Alert, Dimensions, FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -51,6 +51,8 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
   });
   const [errors, setErrors] = useState<Partial<CoachingFormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentCoachIndex, setCurrentCoachIndex] = useState(0);
+  const flatListRef = useRef<FlatList>(null);
   const dismissKeyboard = useKeyboardDismiss();
   const insets = useSafeAreaInsets();
 
@@ -110,6 +112,27 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
   // Calculate bottom padding for nav bar clearance
   const bottomPadding = 70 + layout.spacing.lg + Math.max(insets.bottom, 12);
 
+  const screenWidth = Dimensions.get('window').width;
+  const cardWidth = screenWidth * 0.85;
+  const cardSpacing = layout.spacing.md;
+  const snapInterval = cardWidth + cardSpacing;
+
+  const scrollToNext = () => {
+    if (currentCoachIndex < COACHES.length - 1) {
+      const nextIndex = currentCoachIndex + 1;
+      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+      setCurrentCoachIndex(nextIndex);
+    }
+  };
+
+  const scrollToPrev = () => {
+    if (currentCoachIndex > 0) {
+      const prevIndex = currentCoachIndex - 1;
+      flatListRef.current?.scrollToIndex({ index: prevIndex, animated: true });
+      setCurrentCoachIndex(prevIndex);
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -162,7 +185,19 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
           <View style={styles.spotlightSection}>
             <Text style={styles.spotlightTitle}>Coach Spotlight</Text>
             <View style={styles.spotlightContainer}>
+              {/* Left Arrow */}
+              {currentCoachIndex > 0 && (
+                <TouchableOpacity
+                  style={[styles.arrowButton, styles.arrowLeft]}
+                  onPress={scrollToPrev}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="chevron-back" size={layout.iconSize.lg} color={colors.neutral.darkText} />
+                </TouchableOpacity>
+              )}
+
               <FlatList
+                ref={flatListRef}
                 data={COACHES}
                 renderItem={({ item }) => (
                   <View style={styles.coachCard}>
@@ -177,10 +212,31 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.spotlightScrollContent}
-                snapToInterval={Dimensions.get('window').width * 0.85 + layout.spacing.md}
+                snapToInterval={snapInterval}
                 decelerationRate="fast"
                 snapToAlignment="center"
+                onMomentumScrollEnd={(event) => {
+                  const index = Math.round(event.nativeEvent.contentOffset.x / snapInterval);
+                  setCurrentCoachIndex(index);
+                }}
+                onScrollToIndexFailed={(info) => {
+                  // Fallback scroll if index fails
+                  setTimeout(() => {
+                    flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
+                  }, 100);
+                }}
               />
+
+              {/* Right Arrow */}
+              {currentCoachIndex < COACHES.length - 1 && (
+                <TouchableOpacity
+                  style={[styles.arrowButton, styles.arrowRight]}
+                  onPress={scrollToNext}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="chevron-forward" size={layout.iconSize.lg} color={colors.neutral.darkText} />
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
@@ -460,5 +516,24 @@ const styles = StyleSheet.create({
     color: colors.neutral.mutedGray,
     lineHeight: typography.fontSize.body * typography.lineHeight.body, // 16 * 1.5 = 24
     textAlign: 'center',
+  },
+  arrowButton: {
+    position: 'absolute',
+    top: '50%',
+    marginTop: -20, // Half of button height to center vertically
+    width: 40,
+    height: 40,
+    borderRadius: 20, // Perfect circle
+    backgroundColor: colors.neutral.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+    ...layout.shadows.md, // Medium shadow for elevation
+  },
+  arrowLeft: {
+    left: layout.spacing.sm, // 8px from left edge
+  },
+  arrowRight: {
+    right: layout.spacing.sm, // 8px from right edge
   },
 });
