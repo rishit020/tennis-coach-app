@@ -6,8 +6,8 @@ import { useKeyboardDismiss } from '@/hooks/use-keyboard-dismiss';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useRef, useState } from 'react';
-import { Alert, Dimensions, FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { AccessibilityInfo, Alert, Animated, Dimensions, FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface CoachingFormData {
@@ -43,6 +43,104 @@ const COACHES = [
   },
 ];
 
+interface CoachCardProps {
+  cardWidth: number;
+  item: typeof COACHES[0];
+  reduceMotion: boolean;
+}
+
+function CoachCard({ cardWidth, item, reduceMotion }: CoachCardProps) {
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+  const shadowOpacity = React.useRef(new Animated.Value(0.08)).current;
+
+  const handlePressIn = () => {
+    if (reduceMotion) return;
+    Animated.parallel([
+      Animated.timing(scaleAnim, {
+        toValue: 1.03,
+        duration: 140,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shadowOpacity, {
+        toValue: 0.15,
+        duration: 140,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  };
+
+  const handlePressOut = () => {
+    if (reduceMotion) return;
+    Animated.parallel([
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 140,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shadowOpacity, {
+        toValue: 0.08,
+        duration: 140,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  };
+
+  return (
+    <TouchableOpacity
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      activeOpacity={1}
+    >
+      <Animated.View
+        style={[
+          {
+            transform: [{ scale: scaleAnim }],
+          },
+        ]}
+      >
+        <Animated.View
+          style={[
+            styles.coachCardWrapper,
+            { width: cardWidth },
+            {
+              shadowOpacity: reduceMotion ? 0.08 : shadowOpacity,
+            },
+          ]}
+        >
+          {Platform.OS === 'web' ? (
+            <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
+              <View style={styles.cardOverlay} />
+              <LinearGradient
+                colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+            </View>
+          ) : (
+            <BlurView intensity={20} tint="light" style={StyleSheet.absoluteFill}>
+              <View style={styles.cardOverlay} />
+              <LinearGradient
+                colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+            </BlurView>
+          )}
+          <View style={styles.coachCardContent}>
+            <View style={styles.coachPhotoPlaceholder}>
+              <Ionicons name="person" size={layout.iconSize['2xl']} color={colors.neutral.gray[500]} />
+            </View>
+            <Text style={styles.coachName}>{item.name}</Text>
+            <Text style={styles.coachInfo}>{item.info}</Text>
+          </View>
+        </Animated.View>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+}
+
 export function CoachingForm({ onSubmit }: CoachingFormProps) {
   const [formData, setFormData] = useState<CoachingFormData>({
     fullName: '',
@@ -54,9 +152,36 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
   const [errors, setErrors] = useState<Partial<CoachingFormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentCoachIndex, setCurrentCoachIndex] = useState(0);
+  const [reduceMotion, setReduceMotion] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+  const leftArrowOpacity = useRef(new Animated.Value(currentCoachIndex > 0 ? 1 : 0)).current;
+  const rightArrowOpacity = useRef(new Animated.Value(currentCoachIndex < COACHES.length - 1 ? 1 : 0)).current;
   const dismissKeyboard = useKeyboardDismiss();
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') {
+      AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (reduceMotion) return;
+    Animated.timing(leftArrowOpacity, {
+      toValue: currentCoachIndex > 0 ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [currentCoachIndex, reduceMotion, leftArrowOpacity]);
+
+  useEffect(() => {
+    if (reduceMotion) return;
+    Animated.timing(rightArrowOpacity, {
+      toValue: currentCoachIndex < COACHES.length - 1 ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [currentCoachIndex, reduceMotion, rightArrowOpacity]);
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -190,11 +315,18 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
             <Text style={styles.spotlightTitle}>Coach Spotlight</Text>
             <View style={styles.spotlightContainer}>
               {/* Left Arrow */}
-              {currentCoachIndex > 0 && (
+              <Animated.View
+                style={[
+                  styles.arrowButton,
+                  styles.arrowLeft,
+                  { opacity: leftArrowOpacity, pointerEvents: currentCoachIndex > 0 ? 'auto' : 'none' },
+                ]}
+              >
                 <TouchableOpacity
-                  style={[styles.arrowButton, styles.arrowLeft]}
                   onPress={scrollToPrev}
                   activeOpacity={0.7}
+                  disabled={currentCoachIndex === 0}
+                  style={StyleSheet.absoluteFill}
                 >
                   {Platform.OS === 'web' ? (
                     <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
@@ -219,7 +351,7 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                   )}
                   <Ionicons name="chevron-back" size={layout.iconSize.lg} color={colors.neutral.darkText} />
                 </TouchableOpacity>
-              )}
+              </Animated.View>
 
               <FlatList
                 ref={flatListRef}
@@ -229,38 +361,7 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                   const horizontalPadding = layout.spacing.lg + layout.spacing.xs;
                   const availableWidth = screenWidth - (horizontalPadding * 2);
                   const cardWidth = Math.min(availableWidth * 0.85, screenWidth * 0.85);
-                  return (
-                    <View style={[styles.coachCardWrapper, { width: cardWidth }]}>
-                    {Platform.OS === 'web' ? (
-                      <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
-                        <View style={styles.cardOverlay} />
-                        <LinearGradient
-                          colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 0, y: 1 }}
-                          style={StyleSheet.absoluteFill}
-                        />
-                      </View>
-                    ) : (
-                      <BlurView intensity={20} tint="light" style={StyleSheet.absoluteFill}>
-                        <View style={styles.cardOverlay} />
-                        <LinearGradient
-                          colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 0, y: 1 }}
-                          style={StyleSheet.absoluteFill}
-                        />
-                      </BlurView>
-                    )}
-                    <View style={styles.coachCardContent}>
-                      <View style={styles.coachPhotoPlaceholder}>
-                        <Ionicons name="person" size={layout.iconSize['2xl']} color={colors.neutral.gray[500]} />
-                      </View>
-                      <Text style={styles.coachName}>{item.name}</Text>
-                      <Text style={styles.coachInfo}>{item.info}</Text>
-                    </View>
-                  </View>
-                  );
+                  return <CoachCard cardWidth={cardWidth} item={item} reduceMotion={reduceMotion} />;
                 }}
                 keyExtractor={(item) => item.id}
                 horizontal
@@ -282,11 +383,18 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
               />
 
               {/* Right Arrow */}
-              {currentCoachIndex < COACHES.length - 1 && (
+              <Animated.View
+                style={[
+                  styles.arrowButton,
+                  styles.arrowRight,
+                  { opacity: rightArrowOpacity, pointerEvents: currentCoachIndex < COACHES.length - 1 ? 'auto' : 'none' },
+                ]}
+              >
                 <TouchableOpacity
-                  style={[styles.arrowButton, styles.arrowRight]}
                   onPress={scrollToNext}
                   activeOpacity={0.7}
+                  disabled={currentCoachIndex === COACHES.length - 1}
+                  style={StyleSheet.absoluteFill}
                 >
                   {Platform.OS === 'web' ? (
                     <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
@@ -311,7 +419,7 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                   )}
                   <Ionicons name="chevron-forward" size={layout.iconSize.lg} color={colors.neutral.darkText} />
                 </TouchableOpacity>
-              )}
+              </Animated.View>
             </View>
           </View>
 
@@ -563,7 +671,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.2)',
-    ...layout.shadows.sm, // Soft shadow matching Home screen
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
   },
   webBlurContainer: Platform.select({
     web: {
