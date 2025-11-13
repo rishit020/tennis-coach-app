@@ -3,6 +3,8 @@ import { colors } from '@/constants/colors';
 import { layout } from '@/constants/layout';
 import { typography } from '@/constants/typography';
 import { useKeyboardDismiss } from '@/hooks/use-keyboard-dismiss';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useRef, useState } from 'react';
 import { Alert, Dimensions, FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
@@ -192,6 +194,27 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                   onPress={scrollToPrev}
                   activeOpacity={0.7}
                 >
+                  {Platform.OS === 'web' ? (
+                    <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
+                      <View style={styles.arrowOverlay} />
+                      <LinearGradient
+                        colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 0, y: 1 }}
+                        style={StyleSheet.absoluteFill}
+                      />
+                    </View>
+                  ) : (
+                    <BlurView intensity={20} tint="light" style={StyleSheet.absoluteFill}>
+                      <View style={styles.arrowOverlay} />
+                      <LinearGradient
+                        colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 0, y: 1 }}
+                        style={StyleSheet.absoluteFill}
+                      />
+                    </BlurView>
+                  )}
                   <Ionicons name="chevron-back" size={layout.iconSize.lg} color={colors.neutral.darkText} />
                 </TouchableOpacity>
               )}
@@ -200,12 +223,35 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                 ref={flatListRef}
                 data={COACHES}
                 renderItem={({ item }) => (
-                  <View style={styles.coachCard}>
-                    <View style={styles.coachPhotoPlaceholder}>
-                      <Ionicons name="person" size={layout.iconSize['2xl']} color={colors.neutral.gray[500]} />
+                  <View style={styles.coachCardWrapper}>
+                    {Platform.OS === 'web' ? (
+                      <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
+                        <View style={styles.cardOverlay} />
+                        <LinearGradient
+                          colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 0, y: 1 }}
+                          style={StyleSheet.absoluteFill}
+                        />
+                      </View>
+                    ) : (
+                      <BlurView intensity={20} tint="light" style={StyleSheet.absoluteFill}>
+                        <View style={styles.cardOverlay} />
+                        <LinearGradient
+                          colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 0, y: 1 }}
+                          style={StyleSheet.absoluteFill}
+                        />
+                      </BlurView>
+                    )}
+                    <View style={styles.coachCardContent}>
+                      <View style={styles.coachPhotoPlaceholder}>
+                        <Ionicons name="person" size={layout.iconSize['2xl']} color={colors.neutral.gray[500]} />
+                      </View>
+                      <Text style={styles.coachName}>{item.name}</Text>
+                      <Text style={styles.coachInfo}>{item.info}</Text>
                     </View>
-                    <Text style={styles.coachName}>{item.name}</Text>
-                    <Text style={styles.coachInfo}>{item.info}</Text>
                   </View>
                 )}
                 keyExtractor={(item) => item.id}
@@ -234,6 +280,27 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                   onPress={scrollToNext}
                   activeOpacity={0.7}
                 >
+                  {Platform.OS === 'web' ? (
+                    <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
+                      <View style={styles.arrowOverlay} />
+                      <LinearGradient
+                        colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 0, y: 1 }}
+                        style={StyleSheet.absoluteFill}
+                      />
+                    </View>
+                  ) : (
+                    <BlurView intensity={20} tint="light" style={StyleSheet.absoluteFill}>
+                      <View style={styles.arrowOverlay} />
+                      <LinearGradient
+                        colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 0, y: 1 }}
+                        style={StyleSheet.absoluteFill}
+                      />
+                    </BlurView>
+                  )}
                   <Ionicons name="chevron-forward" size={layout.iconSize.lg} color={colors.neutral.darkText} />
                 </TouchableOpacity>
               )}
@@ -482,14 +549,31 @@ const styles = StyleSheet.create({
   spotlightScrollContent: {
     paddingHorizontal: layout.spacing.md, // 16px horizontal padding
   },
-  coachCard: {
+  coachCardWrapper: {
     width: Dimensions.get('window').width * 0.85,
-    backgroundColor: colors.neutral.white,
     borderRadius: layout.borderRadius.medium, // 16px - matching Home screen cards
-    padding: layout.spacing.lg, // 24px padding
     marginRight: layout.spacing.md, // 16px spacing between cards
-    alignItems: 'center',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
     ...layout.shadows.sm, // Soft shadow matching Home screen
+  },
+  webBlurContainer: Platform.select({
+    web: {
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+    } as any,
+    default: {},
+  }),
+  cardOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  coachCardContent: {
+    padding: layout.spacing.lg, // 24px padding
+    alignItems: 'center',
+    position: 'relative',
+    zIndex: 1,
   },
   coachPhotoPlaceholder: {
     width: 80,
@@ -524,11 +608,17 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20, // Perfect circle
-    backgroundColor: colors.neutral.white,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
     ...layout.shadows.md, // Medium shadow for elevation
+  },
+  arrowOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
   },
   arrowLeft: {
     left: layout.spacing.sm, // 8px from left edge
