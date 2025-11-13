@@ -5,7 +5,8 @@ import { typography } from '@/constants/typography';
 import { useKeyboardDismiss } from '@/hooks/use-keyboard-dismiss';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Alert, Dimensions, FlatList, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface CoachingFormData {
   fullName: string;
@@ -19,11 +20,12 @@ interface CoachingFormProps {
   onSubmit?: (data: CoachingFormData) => void;
 }
 
-const SESSION_TYPES = [
-  { label: 'Technique Focus', value: 'technique' },
-  { label: 'Strategy', value: 'strategy' },
-  { label: 'Match Play', value: 'match' },
-  { label: 'Fitness', value: 'fitness' },
+const FEATURES = [
+  'Personalized technique analysis',
+  'Strategy and game planning',
+  'Video analysis included',
+  'Flexible scheduling',
+  'All skill levels welcome',
 ];
 
 export function CoachingForm({ onSubmit }: CoachingFormProps) {
@@ -37,6 +39,7 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
   const [errors, setErrors] = useState<Partial<CoachingFormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const dismissKeyboard = useKeyboardDismiss();
+  const insets = useSafeAreaInsets();
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -58,10 +61,6 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
       newErrors.email = 'Email is required';
     } else if (!validateEmail(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
-    }
-
-    if (!formData.sessionType) {
-      newErrors.sessionType = 'Please select a session type';
     }
 
     setErrors(newErrors);
@@ -95,210 +94,314 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
     }
   };
 
+  // Calculate bottom padding for nav bar clearance
+  const bottomPadding = 70 + layout.spacing.lg + Math.max(insets.bottom, 12);
+
   return (
-    <ScrollView
-      style={styles.container}
-      keyboardShouldPersistTaps="handled"
-      onScrollBeginDrag={dismissKeyboard}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.keyboardAvoidingView}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
-      <View style={styles.content}>
-        {/* Header */}
-        <Text style={styles.headerTitle}>Book Your Session</Text>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
+        keyboardShouldPersistTaps="handled"
+        onScrollBeginDrag={dismissKeyboard}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.content}>
+          {/* Header Section */}
+          <View style={styles.headerSection}>
+            <Text style={styles.headerTitle}>Private Tennis Coaching</Text>
+            <Text style={styles.headerDescription}>
+              Book a personalized coaching session with our nationally ranked USTA players. Improve your technique, strategy, and overall game.
+            </Text>
+          </View>
 
-        {/* Booking Form */}
-        <TouchableWithoutFeedback onPress={dismissKeyboard}>
-          <Card style={styles.bookingCard}>
-            {/* Preferred Session Type */}
-            <Text style={styles.sessionTypeLabel}>Preferred Session Type</Text>
-            <View style={styles.sessionTypeOptions}>
-              {SESSION_TYPES.map((type) => (
-                <TouchableOpacity
-                  key={type.value}
-                  style={[
-                    styles.sessionTypeOption,
-                    formData.sessionType === type.value && styles.sessionTypeOptionSelected,
-                  ]}
-                  onPress={() => {
-                    setFormData(prev => ({ ...prev, sessionType: type.value }));
-                    setErrors(prev => ({ ...prev, sessionType: undefined }));
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.sessionTypeOptionText,
-                      formData.sessionType === type.value && styles.sessionTypeOptionTextSelected,
-                    ]}
-                  >
-                    {type.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            {errors.sessionType && (
-              <Text style={styles.errorText}>{errors.sessionType}</Text>
-            )}
-
-            {/* Name and Phone (Side by Side) */}
-            <View style={styles.namePhoneRow}>
-              <View style={styles.nameInput}>
-                <Input
-                  label=""
-                  value={formData.fullName}
-                  onChangeText={(text) => setFormData(prev => ({ ...prev, fullName: text }))}
-                  error={errors.fullName}
-                  required
-                  placeholder="Full Name *"
-                />
+          {/* Coaching Details Card */}
+          <Card style={styles.detailsCard} padding="lg" shadow="md">
+            <View style={styles.detailsContent}>
+              {/* Trophy Icon */}
+              <View style={styles.trophyContainer}>
+                <Ionicons name="trophy" size={layout.iconSize['2xl']} color={colors.primary.green} />
               </View>
-              <View style={styles.phoneInput}>
-                <Input
-                  label=""
-                  value={formData.phone}
-                  onChangeText={(text) => setFormData(prev => ({ ...prev, phone: text }))}
-                  error={errors.phone}
-                  required
-                  placeholder="Phone Numb..."
-                  keyboardType="phone-pad"
-                />
+
+              {/* Private Coaching Title */}
+              <Text style={styles.coachingTitle}>Private Coaching</Text>
+
+              {/* Price */}
+              <Text style={styles.price}>$60/hour</Text>
+
+              {/* Features List */}
+              <View style={styles.featuresList}>
+                {FEATURES.map((feature, index) => (
+                  <View key={index} style={styles.featureItem}>
+                    <Ionicons name="checkmark-circle" size={layout.iconSize.md} color={colors.primary.green} style={styles.checkmark} />
+                    <Text style={styles.featureText}>{feature}</Text>
+                  </View>
+                ))}
               </View>
             </View>
-
-            {/* Email */}
-            <Input
-              label=""
-              value={formData.email}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
-              error={errors.email}
-              required
-              placeholder="Email Address *"
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-
-            {/* Goals Text Area */}
-            <Input
-              label=""
-              value={formData.goals}
-              onChangeText={(text) => setFormData(prev => ({ ...prev, goals: text }))}
-              multiline
-              numberOfLines={4}
-              placeholder="What are your goals for this session?"
-              style={styles.goalsInput}
-            />
-
-            {/* Book Session Button */}
-            <TouchableOpacity
-              style={styles.bookSessionButton}
-              onPress={handleSubmit}
-              disabled={isSubmitting}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="checkmark" size={20} color={colors.neutral.white} style={{ marginRight: layout.spacing.sm }} />
-              <Text style={styles.bookSessionButtonText}>Book Session ($60/hour)</Text>
-            </TouchableOpacity>
           </Card>
-        </TouchableWithoutFeedback>
-      </View>
-    </ScrollView>
+
+          {/* Coach Spotlight Section */}
+          <View style={styles.spotlightSection}>
+            <Text style={styles.spotlightTitle}>Coach Spotlight</Text>
+            <View style={styles.spotlightContainer}>
+              <FlatList
+                data={[]}
+                renderItem={() => null}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.spotlightScrollContent}
+                snapToInterval={Dimensions.get('window').width * 0.85 + layout.spacing.md}
+                decelerationRate="fast"
+                snapToAlignment="center"
+              />
+            </View>
+          </View>
+
+          {/* Booking Section */}
+          <View style={styles.bookingSection}>
+            <Text style={styles.bookingTitle}>Book Your Session</Text>
+
+            <TouchableWithoutFeedback onPress={dismissKeyboard}>
+              <View>
+                {/* Name and Phone (Side by Side) */}
+                <View style={styles.namePhoneRow}>
+                  <View style={styles.nameInput}>
+                    <Input
+                      label=""
+                      value={formData.fullName}
+                      onChangeText={(text) => setFormData(prev => ({ ...prev, fullName: text }))}
+                      error={errors.fullName}
+                      required
+                      placeholder="Full Name *"
+                      style={styles.inputField}
+                    />
+                  </View>
+                  <View style={styles.phoneInput}>
+                    <Input
+                      label=""
+                      value={formData.phone}
+                      onChangeText={(text) => setFormData(prev => ({ ...prev, phone: text }))}
+                      error={errors.phone}
+                      required
+                      placeholder="Phone Numb..."
+                      keyboardType="phone-pad"
+                      style={styles.inputField}
+                    />
+                  </View>
+                </View>
+
+                {/* Email */}
+                <Input
+                  label=""
+                  value={formData.email}
+                  onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
+                  error={errors.email}
+                  required
+                  placeholder="Email Address *"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  style={styles.inputField}
+                />
+
+                {/* Goals Text Area */}
+                <Input
+                  label=""
+                  value={formData.goals}
+                  onChangeText={(text) => setFormData(prev => ({ ...prev, goals: text }))}
+                  multiline
+                  numberOfLines={4}
+                  placeholder="What are your goals for this session?"
+                  style={[styles.inputField, styles.goalsInput]}
+                />
+
+                {/* Book Session Button */}
+                <TouchableOpacity
+                  style={styles.bookSessionButton}
+                  onPress={handleSubmit}
+                  disabled={isSubmitting}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="checkmark" size={layout.iconSize.sm} color={colors.neutral.white} style={styles.buttonIcon} />
+                  <Text style={styles.bookSessionButtonText}>Book Session ($60/hour)</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  keyboardAvoidingView: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: colors.neutral.background,
+    backgroundColor: colors.neutral.white,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   content: {
-    paddingTop: 60,
-    paddingHorizontal: layout.spacing.lg,
-    paddingBottom: layout.spacing.xl,
+    paddingTop: layout.spacing['3xl'], // 64px - consistent with Home screen
+    paddingHorizontal: layout.spacing.lg + layout.spacing.xs, // 24px - premium horizontal margin
+  },
+  // Header Section
+  headerSection: {
+    marginBottom: layout.spacing.xl, // 32px spacing
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: typography.fontSize['3xl'],
-    fontWeight: typography.fontWeight.bold,
-    color: colors.neutral.gray[900],
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.fontSize.h1, // 32px - large, bold
+    fontWeight: typography.fontWeight.bold, // 700
+    color: colors.neutral.darkText,
+    lineHeight: typography.fontSize.h1 * typography.lineHeight.heading, // 32 * 1.3 = 41.6
     textAlign: 'center',
-    marginBottom: layout.spacing.xl,
+    marginBottom: layout.spacing.md, // 16px spacing
   },
-  bookingCard: {
-    borderRadius: layout.borderRadius.card,
-    ...layout.shadows.md,
+  headerDescription: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.body, // 16px
+    fontWeight: typography.fontWeight.normal, // 400
+    color: colors.neutral.darkText,
+    lineHeight: typography.fontSize.body * typography.lineHeight.body, // 16 * 1.5 = 24
+    textAlign: 'center',
+    maxWidth: layout.spacing.xxl * 4, // Optimal reading width
   },
-  sessionTypeLabel: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.neutral.gray[900],
-    marginBottom: layout.spacing.md,
+  // Coaching Details Card
+  detailsCard: {
+    backgroundColor: colors.neutral.background, // Light gray background
+    borderRadius: layout.borderRadius.medium, // 16px rounded corners
+    marginBottom: layout.spacing.xl, // 32px spacing
   },
-  sessionTypeOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -layout.spacing.sm / 2,
-    marginBottom: layout.spacing.lg,
-  },
-  sessionTypeOption: {
-    flex: 1,
-    minWidth: '45%',
-    paddingVertical: layout.spacing.md,
-    paddingHorizontal: layout.spacing.md,
-    borderRadius: layout.borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.neutral.gray[300],
-    backgroundColor: colors.neutral.white,
-    margin: layout.spacing.sm / 2,
-    marginBottom: layout.spacing.sm,
+  detailsContent: {
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  sessionTypeOptionSelected: {
-    backgroundColor: colors.primary.green,
-    borderColor: colors.primary.green,
+  trophyContainer: {
+    marginBottom: layout.spacing.md, // 16px spacing below icon
   },
-  sessionTypeOptionText: {
-    fontSize: typography.fontSize.base,
-    color: colors.neutral.gray[900],
+  coachingTitle: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.fontSize.h2, // 22px
+    fontWeight: typography.fontWeight.bold, // 700
+    color: colors.neutral.darkText,
+    lineHeight: typography.fontSize.h2 * typography.lineHeight.heading, // 22 * 1.3 = 28.6
+    marginBottom: layout.spacing.sm, // 8px spacing
+    textAlign: 'center',
   },
-  sessionTypeOptionTextSelected: {
-    color: colors.neutral.white,
-    fontWeight: typography.fontWeight.bold,
+  price: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.fontSize['3xl'], // 30px - larger, bold green
+    fontWeight: typography.fontWeight.bold, // 700
+    color: colors.primary.green,
+    lineHeight: typography.fontSize['3xl'] * typography.lineHeight.heading, // 30 * 1.3 = 39
+    marginBottom: layout.spacing.lg, // 24px spacing before features
+    textAlign: 'center',
+  },
+  featuresList: {
+    width: '100%',
+    alignItems: 'flex-start',
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: layout.spacing.md, // 16px spacing between features
+    width: '100%',
+  },
+  checkmark: {
+    marginRight: layout.spacing.sm, // 8px spacing between icon and text
+  },
+  featureText: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.body, // 16px
+    fontWeight: typography.fontWeight.normal, // 400
+    color: colors.neutral.darkText,
+    lineHeight: typography.fontSize.body * typography.lineHeight.body, // 16 * 1.5 = 24
+    flex: 1,
+  },
+  // Booking Section
+  bookingSection: {
+    marginTop: layout.spacing.xl, // 32px spacing from details card
+  },
+  bookingTitle: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.fontSize.h2, // 22px
+    fontWeight: typography.fontWeight.bold, // 700
+    color: colors.neutral.darkText,
+    lineHeight: typography.fontSize.h2 * typography.lineHeight.heading, // 22 * 1.3 = 28.6
+    marginBottom: layout.spacing.lg, // 24px spacing before inputs
   },
   namePhoneRow: {
     flexDirection: 'row',
-    marginBottom: layout.spacing.md,
-    marginHorizontal: -layout.spacing.xs,
+    marginBottom: layout.spacing.md, // 16px spacing
+    marginHorizontal: -layout.spacing.xs, // Negative margin for side-by-side inputs
   },
   nameInput: {
     flex: 1,
-    marginHorizontal: layout.spacing.xs,
+    marginHorizontal: layout.spacing.xs, // 4px spacing between inputs
   },
   phoneInput: {
     flex: 1,
-    marginHorizontal: layout.spacing.xs,
+    marginHorizontal: layout.spacing.xs, // 4px spacing between inputs
+  },
+  inputField: {
+    marginBottom: layout.spacing.md, // 16px spacing between inputs
   },
   goalsInput: {
-    marginTop: layout.spacing.md,
-    marginBottom: layout.spacing.lg,
     minHeight: 100,
+    marginBottom: layout.spacing.lg, // 24px spacing before button
   },
   bookSessionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primary.green,
-    paddingVertical: layout.spacing.md + 4,
-    paddingHorizontal: layout.spacing.xl,
-    borderRadius: layout.borderRadius.full,
-    marginTop: layout.spacing.md,
-    ...layout.shadows.sm,
+    height: layout.buttonHeight.lg, // 52px height
+    paddingHorizontal: layout.spacing.xl, // 32px horizontal padding
+    borderRadius: layout.borderRadius.pill, // Full pill shape
+    ...layout.shadows.md, // Medium shadow
+    marginTop: layout.spacing.md, // 16px spacing above button
+  },
+  buttonIcon: {
+    marginRight: layout.spacing.sm, // 8px spacing between icon and text
   },
   bookSessionButtonText: {
-    fontSize: typography.fontSize.base,
-    fontWeight: typography.fontWeight.bold,
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.fontSize.body, // 16px
+    fontWeight: typography.fontWeight.bold, // 700
     color: colors.neutral.white,
+    lineHeight: typography.fontSize.body * typography.lineHeight.body, // 16 * 1.5 = 24
   },
   errorText: {
-    fontSize: typography.fontSize.sm,
+    fontSize: typography.fontSize.small,
     color: colors.semantic.error,
     marginTop: layout.spacing.xs,
+  },
+  // Coach Spotlight Section
+  spotlightSection: {
+    marginTop: layout.spacing.xl, // 32px spacing from details card
+    marginBottom: layout.spacing.xl, // 32px spacing before booking section
+  },
+  spotlightTitle: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.fontSize.h2, // 22px
+    fontWeight: typography.fontWeight.bold, // 700
+    color: colors.neutral.darkText,
+    lineHeight: typography.fontSize.h2 * typography.lineHeight.heading, // 22 * 1.3 = 28.6
+    marginBottom: layout.spacing.lg, // 24px spacing before cards
+  },
+  spotlightContainer: {
+    position: 'relative',
+  },
+  spotlightScrollContent: {
+    paddingHorizontal: layout.spacing.md, // 16px horizontal padding
   },
 });

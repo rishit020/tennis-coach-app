@@ -1,11 +1,12 @@
 /**
  * TennisCoachApp Color Palette
  * Tennis-themed colors for consistent UI design
+ * Design tokens for standardized color usage
  */
 
 export const colors = {
   primary: {
-    green: '#1E7B34',      // Rich tennis green (matches reference designs)
+    green: '#1d6b36',      // Standardized primary green
     dark: '#1B5E3A',       // Darker green for accents
   },
   accent: {
@@ -13,7 +14,7 @@ export const colors = {
     orange: '#FF8C00',      // Warm accent
   },
   neutral: {
-    white: '#FFFFFF',
+    white: '#FFFFFF',       // Standardized background white
     background: '#F5F6FA',  // Light neutral off-white background
     gray: {
       100: '#F5F5F5',
@@ -22,6 +23,9 @@ export const colors = {
       700: '#374151',
       900: '#111827',
     },
+    // Design token aliases
+    darkText: '#111318',    // Standardized dark text color
+    mutedGray: '#6B6F76',   // Standardized muted gray
   },
   semantic: {
     success: '#10B981',

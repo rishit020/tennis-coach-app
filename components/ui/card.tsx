@@ -7,7 +7,7 @@ interface CardProps {
   children: React.ReactNode;
   style?: ViewStyle;
   padding?: 'sm' | 'md' | 'lg';
-  shadow?: 'sm' | 'md' | 'lg';
+  shadow?: 'sm' | 'md' | 'lg' | null;
 }
 
 export function Card({ 
@@ -19,9 +19,9 @@ export function Card({
   const cardStyle = [
     styles.base,
     styles[`padding${padding.charAt(0).toUpperCase() + padding.slice(1)}`],
-    styles[`shadow${shadow.charAt(0).toUpperCase() + shadow.slice(1)}`],
+    shadow ? styles[`shadow${shadow.charAt(0).toUpperCase() + shadow.slice(1)}`] : null,
     style,
-  ];
+  ].filter(Boolean);
 
   return <View style={cardStyle}>{children}</View>;
 }

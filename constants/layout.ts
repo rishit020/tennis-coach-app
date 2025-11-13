@@ -12,6 +12,7 @@ export const layout = {
     xl: 32,
     '2xl': 48,
     '3xl': 64,
+    xxl: 80, // Extended spacing scale
   },
   borderRadius: {
     sm: 4,
@@ -22,6 +23,10 @@ export const layout = {
     full: 9999,
     card: 14,  // Consistent card border radius (12-16px)
     button: 12, // Button border radius
+    // Design token aliases
+    small: 8,   // Standardized small radius
+    medium: 16, // Standardized medium radius
+    pill: 999,  // Standardized pill radius
   },
   shadows: {
     sm: {
@@ -45,6 +50,21 @@ export const layout = {
       shadowRadius: 8,
       elevation: 8,
     },
+    // Design token aliases
+    soft: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    hover: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.12,
+      shadowRadius: 8,
+      elevation: 6,
+    },
   },
   screenPadding: {
     horizontal: 16,
@@ -59,6 +79,14 @@ export const layout = {
     sm: 40,
     md: 48,
     lg: 56,
+  },
+  iconSize: {
+    xs: 16,
+    sm: 20,
+    md: 24,
+    lg: 28,
+    xl: 32,
+    '2xl': 48,
   },
 } as const;
 

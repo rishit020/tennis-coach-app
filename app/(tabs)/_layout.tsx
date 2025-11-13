@@ -2,35 +2,25 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
-import { HapticTab } from '@/components/haptic-tab';
+import { GlassmorphicTabBar } from '@/components/glassmorphic-tab-bar';
 import { colors } from '@/constants/colors';
 
 export default function TabLayout() {
   return (
     <Tabs
+      tabBar={(props) => <GlassmorphicTabBar {...props} />}
       screenOptions={{
         tabBarActiveTintColor: colors.primary.green,
         tabBarInactiveTintColor: colors.neutral.gray[500],
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarStyle: {
-          backgroundColor: colors.neutral.white,
-          borderTopColor: colors.neutral.gray[300],
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 60,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
-        },
+        tabBarShowLabel: false, // We handle labels in the custom component
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
+            <Ionicons name="home-outline" size={size} color={color} />
           ),
         }}
       />
@@ -39,7 +29,7 @@ export default function TabLayout() {
         options={{
           title: 'Upload',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="videocam" size={size} color={color} />
+            <Ionicons name="videocam-outline" size={size} color={color} />
           ),
         }}
       />
@@ -48,7 +38,7 @@ export default function TabLayout() {
         options={{
           title: 'Coaching',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="tennisball" size={size} color={color} />
+            <Ionicons name="tennisball-outline" size={size} color={color} />
           ),
         }}
       />
@@ -57,7 +47,7 @@ export default function TabLayout() {
         options={{
           title: 'Contact',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="mail" size={size} color={color} />
+            <Ionicons name="mail-outline" size={size} color={color} />
           ),
         }}
       />
@@ -66,7 +56,7 @@ export default function TabLayout() {
         options={{
           title: 'About',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="information-circle" size={size} color={color} />
+            <Ionicons name="information-circle-outline" size={size} color={color} />
           ),
         }}
       />

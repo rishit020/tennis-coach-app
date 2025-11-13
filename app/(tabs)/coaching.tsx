@@ -1,20 +1,20 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { CoachingForm } from '@/components/forms';
 import { colors } from '@/constants/colors';
 
 export default function CoachingScreen() {
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <CoachingForm />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.neutral.background,
+    backgroundColor: colors.neutral.white, // White background to match image
   },
 });
