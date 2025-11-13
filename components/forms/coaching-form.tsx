@@ -115,7 +115,9 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
   const bottomPadding = 70 + layout.spacing.lg + Math.max(insets.bottom, 12);
 
   const screenWidth = Dimensions.get('window').width;
-  const cardWidth = screenWidth * 0.85;
+  const horizontalPadding = layout.spacing.lg + layout.spacing.xs; // Match content padding
+  const availableWidth = screenWidth - (horizontalPadding * 2);
+  const cardWidth = Math.min(availableWidth * 0.85, screenWidth * 0.85); // 80-90% range, ensure peek visible
   const cardSpacing = layout.spacing.md;
   const snapInterval = cardWidth + cardSpacing;
 
@@ -222,8 +224,13 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
               <FlatList
                 ref={flatListRef}
                 data={COACHES}
-                renderItem={({ item }) => (
-                  <View style={styles.coachCardWrapper}>
+                renderItem={({ item }) => {
+                  const screenWidth = Dimensions.get('window').width;
+                  const horizontalPadding = layout.spacing.lg + layout.spacing.xs;
+                  const availableWidth = screenWidth - (horizontalPadding * 2);
+                  const cardWidth = Math.min(availableWidth * 0.85, screenWidth * 0.85);
+                  return (
+                    <View style={[styles.coachCardWrapper, { width: cardWidth }]}>
                     {Platform.OS === 'web' ? (
                       <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
                         <View style={styles.cardOverlay} />
@@ -253,7 +260,8 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                       <Text style={styles.coachInfo}>{item.info}</Text>
                     </View>
                   </View>
-                )}
+                  );
+                }}
                 keyExtractor={(item) => item.id}
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -547,10 +555,9 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   spotlightScrollContent: {
-    paddingHorizontal: layout.spacing.md, // 16px horizontal padding
+    paddingHorizontal: layout.spacing.md, // 16px horizontal padding for peek effect
   },
   coachCardWrapper: {
-    width: Dimensions.get('window').width * 0.85,
     borderRadius: layout.borderRadius.medium, // 16px - matching Home screen cards
     marginRight: layout.spacing.md, // 16px spacing between cards
     overflow: 'hidden',
@@ -621,9 +628,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.25)',
   },
   arrowLeft: {
-    left: layout.spacing.sm, // 8px from left edge
+    left: 0, // Positioned at left edge of container
   },
   arrowRight: {
-    right: layout.spacing.sm, // 8px from right edge
+    right: 0, // Positioned at right edge of container
   },
 });
