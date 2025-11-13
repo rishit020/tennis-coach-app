@@ -113,20 +113,36 @@ function CoachCard({ cardWidth, item, reduceMotion }: CoachCardProps) {
           {Platform.OS === 'web' ? (
             <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
               <View style={styles.cardOverlay} />
+              {/* Main gradient overlay */}
               <LinearGradient
-                colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
+                colors={['rgba(255,255,255,0.5)', 'rgba(255,255,255,0.25)', 'rgba(255,255,255,0.15)']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
                 style={StyleSheet.absoluteFill}
               />
+              {/* Subtle highlight at top for liquid glass effect */}
+              <LinearGradient
+                colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 0.3 }}
+                style={StyleSheet.absoluteFill}
+              />
             </View>
           ) : (
-            <BlurView intensity={20} tint="light" style={StyleSheet.absoluteFill}>
+            <BlurView intensity={25} tint="light" style={StyleSheet.absoluteFill}>
               <View style={styles.cardOverlay} />
+              {/* Main gradient overlay */}
               <LinearGradient
-                colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
+                colors={['rgba(255,255,255,0.5)', 'rgba(255,255,255,0.25)', 'rgba(255,255,255,0.15)']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+              {/* Subtle highlight at top for liquid glass effect */}
+              <LinearGradient
+                colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 0.3 }}
                 style={StyleSheet.absoluteFill}
               />
             </BlurView>
@@ -157,8 +173,8 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
   const [currentCoachIndex, setCurrentCoachIndex] = useState(0);
   const [reduceMotion, setReduceMotion] = useState(false);
   const flatListRef = useRef<FlatList>(null);
-  const leftArrowOpacity = useRef(new Animated.Value(currentCoachIndex > 0 ? 1 : 0)).current;
-  const rightArrowOpacity = useRef(new Animated.Value(currentCoachIndex < COACHES.length - 1 ? 1 : 0)).current;
+  const leftArrowOpacity = useRef(new Animated.Value(1)).current; // Always visible with looping
+  const rightArrowOpacity = useRef(new Animated.Value(1)).current; // Always visible with looping
   const dismissKeyboard = useKeyboardDismiss();
   const insets = useSafeAreaInsets();
 
@@ -170,21 +186,23 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
 
   useEffect(() => {
     if (reduceMotion) return;
+    // Always show arrows with looping scroll
     Animated.timing(leftArrowOpacity, {
-      toValue: currentCoachIndex > 0 ? 1 : 0,
+      toValue: 1,
       duration: 200,
       useNativeDriver: true,
     }).start();
-  }, [currentCoachIndex, reduceMotion, leftArrowOpacity]);
+  }, [reduceMotion, leftArrowOpacity]);
 
   useEffect(() => {
     if (reduceMotion) return;
+    // Always show arrows with looping scroll
     Animated.timing(rightArrowOpacity, {
-      toValue: currentCoachIndex < COACHES.length - 1 ? 1 : 0,
+      toValue: 1,
       duration: 200,
       useNativeDriver: true,
     }).start();
-  }, [currentCoachIndex, reduceMotion, rightArrowOpacity]);
+  }, [reduceMotion, rightArrowOpacity]);
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -250,19 +268,17 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
   const snapInterval = cardWidth + cardSpacing;
 
   const scrollToNext = () => {
-    if (currentCoachIndex < COACHES.length - 1) {
-      const nextIndex = currentCoachIndex + 1;
-      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
-      setCurrentCoachIndex(nextIndex);
-    }
+    // Looping scroll: if at last, go to first
+    const nextIndex = currentCoachIndex < COACHES.length - 1 ? currentCoachIndex + 1 : 0;
+    flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+    setCurrentCoachIndex(nextIndex);
   };
 
   const scrollToPrev = () => {
-    if (currentCoachIndex > 0) {
-      const prevIndex = currentCoachIndex - 1;
-      flatListRef.current?.scrollToIndex({ index: prevIndex, animated: true });
-      setCurrentCoachIndex(prevIndex);
-    }
+    // Looping scroll: if at first, go to last
+    const prevIndex = currentCoachIndex > 0 ? currentCoachIndex - 1 : COACHES.length - 1;
+    flatListRef.current?.scrollToIndex({ index: prevIndex, animated: true });
+    setCurrentCoachIndex(prevIndex);
   };
 
   return (
@@ -322,13 +338,12 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                 style={[
                   styles.arrowButton,
                   styles.arrowLeft,
-                  { opacity: leftArrowOpacity, pointerEvents: currentCoachIndex > 0 ? 'auto' : 'none' },
+                  { opacity: leftArrowOpacity },
                 ]}
               >
                 <TouchableOpacity
                   onPress={scrollToPrev}
                   activeOpacity={0.7}
-                  disabled={currentCoachIndex === 0}
                   style={StyleSheet.absoluteFill}
                   accessibilityLabel="Previous coach"
                   accessibilityRole="button"
@@ -338,19 +353,31 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                     <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
                       <View style={styles.arrowOverlay} />
                       <LinearGradient
-                        colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
+                        colors={['rgba(255,255,255,0.5)', 'rgba(255,255,255,0.25)', 'rgba(255,255,255,0.15)']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 0, y: 1 }}
                         style={StyleSheet.absoluteFill}
                       />
+                      <LinearGradient
+                        colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 0, y: 0.3 }}
+                        style={StyleSheet.absoluteFill}
+                      />
                     </View>
                   ) : (
-                    <BlurView intensity={20} tint="light" style={StyleSheet.absoluteFill}>
+                    <BlurView intensity={25} tint="light" style={StyleSheet.absoluteFill}>
                       <View style={styles.arrowOverlay} />
                       <LinearGradient
-                        colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
+                        colors={['rgba(255,255,255,0.5)', 'rgba(255,255,255,0.25)', 'rgba(255,255,255,0.15)']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 0, y: 1 }}
+                        style={StyleSheet.absoluteFill}
+                      />
+                      <LinearGradient
+                        colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 0, y: 0.3 }}
                         style={StyleSheet.absoluteFill}
                       />
                     </BlurView>
@@ -395,13 +422,12 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                 style={[
                   styles.arrowButton,
                   styles.arrowRight,
-                  { opacity: rightArrowOpacity, pointerEvents: currentCoachIndex < COACHES.length - 1 ? 'auto' : 'none' },
+                  { opacity: rightArrowOpacity },
                 ]}
               >
                 <TouchableOpacity
                   onPress={scrollToNext}
                   activeOpacity={0.7}
-                  disabled={currentCoachIndex === COACHES.length - 1}
                   style={StyleSheet.absoluteFill}
                   accessibilityLabel="Next coach"
                   accessibilityRole="button"
@@ -411,19 +437,31 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                     <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
                       <View style={styles.arrowOverlay} />
                       <LinearGradient
-                        colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
+                        colors={['rgba(255,255,255,0.5)', 'rgba(255,255,255,0.25)', 'rgba(255,255,255,0.15)']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 0, y: 1 }}
                         style={StyleSheet.absoluteFill}
                       />
+                      <LinearGradient
+                        colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 0, y: 0.3 }}
+                        style={StyleSheet.absoluteFill}
+                      />
                     </View>
                   ) : (
-                    <BlurView intensity={20} tint="light" style={StyleSheet.absoluteFill}>
+                    <BlurView intensity={25} tint="light" style={StyleSheet.absoluteFill}>
                       <View style={styles.arrowOverlay} />
                       <LinearGradient
-                        colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
+                        colors={['rgba(255,255,255,0.5)', 'rgba(255,255,255,0.25)', 'rgba(255,255,255,0.15)']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 0, y: 1 }}
+                        style={StyleSheet.absoluteFill}
+                      />
+                      <LinearGradient
+                        colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 0, y: 0.3 }}
                         style={StyleSheet.absoluteFill}
                       />
                     </BlurView>
@@ -681,22 +719,23 @@ const styles = StyleSheet.create({
     marginRight: layout.spacing.md, // 16px spacing between cards
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
+    borderColor: 'rgba(255,255,255,0.35)', // Enhanced border visibility
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    shadowOpacity: 0.15,
+    elevation: 8, // Enhanced elevation for Android
   },
   webBlurContainer: Platform.select({
     web: {
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
     } as any,
     default: {},
   }),
   cardOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: 'rgba(255, 255, 255, 0.35)', // Increased opacity for better visibility
   },
   coachCardContent: {
     padding: layout.spacing.lg, // 24px padding
@@ -733,21 +772,25 @@ const styles = StyleSheet.create({
   arrowButton: {
     position: 'absolute',
     top: '50%',
-    marginTop: -20, // Half of button height to center vertically
-    width: 40,
-    height: 40,
-    borderRadius: 20, // Perfect circle
+    marginTop: -22, // Half of button height to center vertically
+    width: 44,
+    height: 44,
+    borderRadius: 22, // Perfect circle
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    ...layout.shadows.md, // Medium shadow for elevation
+    borderColor: 'rgba(255,255,255,0.4)', // Enhanced border visibility
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    shadowOpacity: 0.2,
+    elevation: 10, // Enhanced elevation for Android
   },
   arrowOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: 'rgba(255, 255, 255, 0.35)', // Increased opacity for better visibility
   },
   arrowLeft: {
     left: 0, // Positioned at left edge of container
