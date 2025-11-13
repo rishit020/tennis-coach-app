@@ -90,6 +90,9 @@ function CoachCard({ cardWidth, item, reduceMotion }: CoachCardProps) {
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       activeOpacity={1}
+      accessibilityLabel={`Coach profile: ${item.name}, ${item.info}`}
+      accessibilityRole="button"
+      accessibilityHint="View coach profile details"
     >
       <Animated.View
         style={[
@@ -129,7 +132,7 @@ function CoachCard({ cardWidth, item, reduceMotion }: CoachCardProps) {
             </BlurView>
           )}
           <View style={styles.coachCardContent}>
-            <View style={styles.coachPhotoPlaceholder}>
+            <View style={styles.coachPhotoPlaceholder} accessibilityLabel={`${item.name} profile photo`}>
               <Ionicons name="person" size={layout.iconSize['2xl']} color={colors.neutral.gray[500]} />
             </View>
             <Text style={styles.coachName}>{item.name}</Text>
@@ -327,6 +330,9 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                   activeOpacity={0.7}
                   disabled={currentCoachIndex === 0}
                   style={StyleSheet.absoluteFill}
+                  accessibilityLabel="Previous coach"
+                  accessibilityRole="button"
+                  accessibilityHint="Navigate to the previous coach profile"
                 >
                   {Platform.OS === 'web' ? (
                     <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
@@ -370,6 +376,8 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                 snapToInterval={snapInterval}
                 decelerationRate="fast"
                 snapToAlignment="center"
+                accessibilityLabel="Coach spotlight carousel"
+                accessibilityHint="Swipe horizontally to browse coach profiles"
                 onMomentumScrollEnd={(event) => {
                   const index = Math.round(event.nativeEvent.contentOffset.x / snapInterval);
                   setCurrentCoachIndex(index);
@@ -395,6 +403,9 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                   activeOpacity={0.7}
                   disabled={currentCoachIndex === COACHES.length - 1}
                   style={StyleSheet.absoluteFill}
+                  accessibilityLabel="Next coach"
+                  accessibilityRole="button"
+                  accessibilityHint="Navigate to the next coach profile"
                 >
                   {Platform.OS === 'web' ? (
                     <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
