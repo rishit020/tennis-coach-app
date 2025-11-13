@@ -28,6 +28,19 @@ const FEATURES = [
   'All skill levels welcome',
 ];
 
+const COACHES = [
+  {
+    id: '1',
+    name: 'Rishit Sharma',
+    info: '15yo USTA Top 50 • UTR 10.2',
+  },
+  {
+    id: '2',
+    name: 'Mihir Mohan',
+    info: '16yo USTA Top 100 • UTR 9.8',
+  },
+];
+
 export function CoachingForm({ onSubmit }: CoachingFormProps) {
   const [formData, setFormData] = useState<CoachingFormData>({
     fullName: '',
@@ -150,8 +163,17 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
             <Text style={styles.spotlightTitle}>Coach Spotlight</Text>
             <View style={styles.spotlightContainer}>
               <FlatList
-                data={[]}
-                renderItem={() => null}
+                data={COACHES}
+                renderItem={({ item }) => (
+                  <View style={styles.coachCard}>
+                    <View style={styles.coachPhotoPlaceholder}>
+                      <Ionicons name="person" size={layout.iconSize['2xl']} color={colors.neutral.gray[500]} />
+                    </View>
+                    <Text style={styles.coachName}>{item.name}</Text>
+                    <Text style={styles.coachInfo}>{item.info}</Text>
+                  </View>
+                )}
+                keyExtractor={(item) => item.id}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.spotlightScrollContent}
@@ -403,5 +425,40 @@ const styles = StyleSheet.create({
   },
   spotlightScrollContent: {
     paddingHorizontal: layout.spacing.md, // 16px horizontal padding
+  },
+  coachCard: {
+    width: Dimensions.get('window').width * 0.85,
+    backgroundColor: colors.neutral.white,
+    borderRadius: layout.borderRadius.medium, // 16px - matching Home screen cards
+    padding: layout.spacing.lg, // 24px padding
+    marginRight: layout.spacing.md, // 16px spacing between cards
+    alignItems: 'center',
+    ...layout.shadows.sm, // Soft shadow matching Home screen
+  },
+  coachPhotoPlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 40, // Perfect circle
+    backgroundColor: colors.neutral.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: layout.spacing.md, // 16px spacing below photo
+  },
+  coachName: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.fontSize.h2, // 22px
+    fontWeight: typography.fontWeight.bold, // 700
+    color: colors.neutral.darkText,
+    lineHeight: typography.fontSize.h2 * typography.lineHeight.heading, // 22 * 1.3 = 28.6
+    marginBottom: layout.spacing.xs, // 4px spacing
+    textAlign: 'center',
+  },
+  coachInfo: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.body, // 16px
+    fontWeight: typography.fontWeight.normal, // 400
+    color: colors.neutral.mutedGray,
+    lineHeight: typography.fontSize.body * typography.lineHeight.body, // 16 * 1.5 = 24
+    textAlign: 'center',
   },
 });
