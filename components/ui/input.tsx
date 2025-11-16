@@ -1,7 +1,7 @@
 import { colors } from '@/constants/colors';
 import { layout } from '@/constants/layout';
 import { typography } from '@/constants/typography';
-import React, { useState } from 'react';
+import React, { forwardRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
 
 interface InputProps extends TextInputProps {
@@ -12,15 +12,17 @@ interface InputProps extends TextInputProps {
   numberOfLines?: number;
 }
 
-export function Input({
+export const Input = forwardRef<TextInput, InputProps>(({
   label,
   error,
   required = false,
   multiline = false,
   numberOfLines = 1,
   style,
+  onFocus,
+  onBlur,
   ...props
-}: InputProps) {
+}, ref) => {
   const [isFocused, setIsFocused] = useState(false);
 
   const inputStyle = [
@@ -31,6 +33,16 @@ export function Input({
     style,
   ];
 
+  const handleFocus = (e: any) => {
+    setIsFocused(true);
+    onFocus?.(e);
+  };
+
+  const handleBlur = (e: any) => {
+    setIsFocused(false);
+    onBlur?.(e);
+  };
+
   return (
     <View style={styles.container}>
       {label && (
@@ -40,18 +52,21 @@ export function Input({
         </Text>
       )}
       <TextInput
+        ref={ref}
         style={inputStyle}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         multiline={multiline}
         numberOfLines={numberOfLines}
-        placeholderTextColor={colors.neutral.gray[500]}
+        placeholderTextColor={colors.neutral.gray[300]}
         {...props}
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
-}
+});
+
+Input.displayName = 'Input';
 
 const styles = StyleSheet.create({
   container: {
