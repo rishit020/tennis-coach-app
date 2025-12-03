@@ -58,7 +58,7 @@ export const Input = forwardRef<TextInput, InputProps>(({
         onBlur={handleBlur}
         multiline={multiline}
         numberOfLines={numberOfLines}
-        placeholderTextColor={colors.neutral.gray[300]}
+        placeholderTextColor={colors.neutral.gray[500]} // Darker placeholder for better readability
         {...props}
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
@@ -74,32 +74,43 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium,
-    color: colors.neutral.gray[700],
-    marginBottom: layout.spacing.xs,
+    fontWeight: typography.fontWeight.medium, // Medium weight
+    color: '#374151', // Slightly darker (#374151)
+    marginBottom: layout.spacing.xs + 2, // 6-8px spacing above inputs
   },
   required: {
     color: colors.semantic.error,
+    fontSize: typography.fontSize.xs, // Smaller asterisk
+    opacity: 0.8, // Slightly tinted but not overly strong
   },
   input: {
     height: layout.inputHeight.md,
     borderWidth: 1,
-    borderColor: colors.neutral.gray[300],
-    borderRadius: layout.borderRadius.md,
-    paddingHorizontal: layout.spacing.md,
-    fontSize: typography.fontSize.base,
+    borderColor: '#E5E7EB', // Slightly darker border for better definition
+    borderRadius: layout.borderRadius.lg, // Rounded-lg for premium feel
+    paddingHorizontal: layout.spacing.md, // py-3 px-4 equivalent
+    paddingVertical: layout.spacing.sm + 2, // ~12px vertical padding
+    fontSize: typography.fontSize.body, // 16px
     color: colors.neutral.gray[900],
     backgroundColor: colors.neutral.white,
   },
   multiline: {
     height: 'auto',
-    minHeight: layout.inputHeight.lg,
+    minHeight: 150, // 150-180px height for textarea
+    maxHeight: 180,
     textAlignVertical: 'top',
     paddingTop: layout.spacing.md,
+    paddingBottom: layout.spacing.md,
   },
   focused: {
     borderColor: colors.primary.green,
     borderWidth: 2,
+    // Focus ring effect with green at 0.3 opacity
+    shadowColor: colors.primary.green,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 2,
   },
   error: {
     borderColor: colors.semantic.error,

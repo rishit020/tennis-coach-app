@@ -3,8 +3,6 @@ import { colors } from '@/constants/colors';
 import { layout } from '@/constants/layout';
 import { typography } from '@/constants/typography';
 import { useKeyboardDismiss } from '@/hooks/use-keyboard-dismiss';
-import { BlurView } from 'expo-blur';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Alert, Animated, Dimensions, FlatList, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
@@ -53,14 +51,11 @@ interface ArrowButtonProps {
 
 function ArrowButton({ onPress, direction, opacity, reduceMotion, accessibilityLabel }: ArrowButtonProps) {
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
-  const [isPressed, setIsPressed] = React.useState(false);
-  const [isHovered, setIsHovered] = React.useState(false);
 
   const handlePressIn = () => {
-    setIsPressed(true);
     if (reduceMotion) return;
     Animated.spring(scaleAnim, {
-      toValue: 0.92,
+      toValue: 0.97,
       useNativeDriver: true,
       tension: 300,
       friction: 20,
@@ -68,7 +63,6 @@ function ArrowButton({ onPress, direction, opacity, reduceMotion, accessibilityL
   };
 
   const handlePressOut = () => {
-    setIsPressed(false);
     if (reduceMotion) return;
     Animated.spring(scaleAnim, {
       toValue: 1,
@@ -78,26 +72,8 @@ function ArrowButton({ onPress, direction, opacity, reduceMotion, accessibilityL
     }).start();
   };
 
-  const handleMouseEnter = () => {
-    if (Platform.OS === 'web') {
-      setIsHovered(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (Platform.OS === 'web') {
-      setIsHovered(false);
-    }
-  };
-
   const iconName = direction === 'left' ? 'chevron-back' : 'chevron-forward';
   const arrowStyle = direction === 'left' ? styles.arrowLeft : styles.arrowRight;
-
-  const borderColor = isHovered 
-    ? 'rgba(255, 255, 255, 0.5)' // Brighter border on hover
-    : isPressed 
-    ? 'rgba(255, 255, 255, 0.45)' // Medium border when pressed
-    : 'rgba(255, 255, 255, 0.4)'; // Default subtle border
 
   return (
     <Animated.View
@@ -106,7 +82,6 @@ function ArrowButton({ onPress, direction, opacity, reduceMotion, accessibilityL
         arrowStyle,
         { opacity },
         { transform: [{ scale: scaleAnim }] },
-        { borderColor },
       ]}
     >
       <TouchableOpacity
@@ -118,45 +93,78 @@ function ArrowButton({ onPress, direction, opacity, reduceMotion, accessibilityL
         accessibilityLabel={accessibilityLabel}
         accessibilityRole="button"
         accessibilityHint={`Navigate to the ${direction === 'left' ? 'previous' : 'next'} coach profile`}
-        // @ts-ignore - web-only props
-        onMouseEnter={handleMouseEnter}
-        // @ts-ignore - web-only props
-        onMouseLeave={handleMouseLeave}
       >
-         {Platform.OS === 'web' ? (
-           <View style={[StyleSheet.absoluteFill, styles.arrowBlurContainer]}>
-             <View style={[
-               styles.arrowOverlay,
-               isHovered && styles.arrowOverlayHovered,
-               isPressed && styles.arrowOverlayPressed
-             ]} />
-             {/* Subtle gradient overlay for glass effect */}
-             <LinearGradient
-               colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']}
-               start={{ x: 0, y: 0 }}
-               end={{ x: 0, y: 1 }}
-               style={StyleSheet.absoluteFill}
-             />
-           </View>
-         ) : (
-           <BlurView intensity={16} tint="light" style={StyleSheet.absoluteFill}>
-             <View style={[
-               styles.arrowOverlay,
-               isHovered && styles.arrowOverlayHovered,
-               isPressed && styles.arrowOverlayPressed
-             ]} />
-             {/* Subtle gradient overlay for glass effect */}
-             <LinearGradient
-               colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']}
-               start={{ x: 0, y: 0 }}
-               end={{ x: 0, y: 1 }}
-               style={StyleSheet.absoluteFill}
-             />
-           </BlurView>
-         )}
         <View style={styles.arrowIconContainer}>
-          <Ionicons name={iconName} size={24} color="rgba(26, 26, 26, 0.8)" />
+          <Ionicons name={iconName} size={layout.iconSize.md} color={colors.neutral.gray[700]} />
         </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
+interface BookSessionButtonProps {
+  onPress: () => void;
+  disabled: boolean;
+  reduceMotion: boolean;
+}
+
+function BookSessionButton({ onPress, disabled, reduceMotion }: BookSessionButtonProps) {
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+  const shadowOpacity = React.useRef(new Animated.Value(0.15)).current;
+
+  const handlePressIn = () => {
+    if (reduceMotion || disabled) return;
+    Animated.parallel([
+      Animated.spring(scaleAnim, {
+        toValue: 0.97,
+        useNativeDriver: true,
+        tension: 300,
+        friction: 20,
+      }),
+      Animated.timing(shadowOpacity, {
+        toValue: 0.2,
+        duration: 140,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  };
+
+  const handlePressOut = () => {
+    if (reduceMotion || disabled) return;
+    Animated.parallel([
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 300,
+        friction: 20,
+      }),
+      Animated.timing(shadowOpacity, {
+        toValue: 0.15,
+        duration: 140,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  };
+
+  return (
+    <Animated.View
+      style={[
+        {
+          transform: [{ scale: scaleAnim }],
+          shadowOpacity: reduceMotion ? 0.15 : shadowOpacity,
+        },
+      ]}
+    >
+      <TouchableOpacity
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled}
+        activeOpacity={1}
+        style={styles.bookSessionButton}
+      >
+        <Ionicons name="checkmark" size={layout.iconSize.sm} color={colors.neutral.white} style={styles.buttonIcon} />
+        <Text style={styles.bookSessionButtonText}>Book Session ($60/hour)</Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -173,7 +181,7 @@ interface CoachCardProps {
 
 function CoachCard({ cardWidth, item, reduceMotion, isActive, scrollX, index }: CoachCardProps) {
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
-  const shadowOpacity = React.useRef(new Animated.Value(0.12)).current;
+  const shadowOpacity = React.useRef(new Animated.Value(0.12)).current; // Match premium shadow opacity
   const opacityAnim = React.useRef(new Animated.Value(1)).current;
   
   // Subtle parallax effect based on scroll position
@@ -219,12 +227,12 @@ function CoachCard({ cardWidth, item, reduceMotion, isActive, scrollX, index }: 
     if (reduceMotion) return;
     Animated.parallel([
       Animated.timing(scaleAnim, {
-        toValue: 1.03,
+        toValue: 1.01,
         duration: 140,
         useNativeDriver: true,
       }),
       Animated.timing(shadowOpacity, {
-        toValue: 0.15,
+        toValue: 0.15, // Slightly stronger on press
         duration: 140,
         useNativeDriver: false,
       }),
@@ -240,7 +248,7 @@ function CoachCard({ cardWidth, item, reduceMotion, isActive, scrollX, index }: 
         useNativeDriver: true,
       }),
       Animated.timing(shadowOpacity, {
-        toValue: 0.12,
+        toValue: 0.12, // Back to premium shadow opacity
         duration: 140,
         useNativeDriver: false,
       }),
@@ -272,15 +280,16 @@ function CoachCard({ cardWidth, item, reduceMotion, isActive, scrollX, index }: 
             styles.coachCardWrapper,
             { width: cardWidth },
             {
-              shadowOpacity: reduceMotion ? 0.12 : shadowOpacity,
+              shadowOpacity: reduceMotion ? 0.08 : shadowOpacity,
             },
           ]}
         >
           <View style={styles.coachCardInner}>
             <View style={styles.coachCardContent}>
-              <View style={styles.coachPhotoPlaceholder} accessibilityLabel={`${item.name} profile photo`}>
-                <View style={styles.avatarInnerHighlight} />
-                <Ionicons name="person-circle-outline" size={64} color={colors.neutral.gray[300]} />
+              <View style={styles.coachPhotoContainer} accessibilityLabel={`${item.name} profile photo`}>
+                <View style={styles.coachPhotoPlaceholder}>
+                  <Ionicons name="person-circle-outline" size={80} color={colors.neutral.gray[300]} />
+                </View>
               </View>
               <View style={styles.divider} />
               <Text style={styles.coachName}>{item.name}</Text>
@@ -449,18 +458,17 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
     : baseBottomPadding;
 
   const screenWidth = Dimensions.get('window').width;
-  const horizontalPadding = layout.spacing.lg + layout.spacing.xs; // Match content padding
-  const availableWidth = screenWidth - (horizontalPadding * 2);
-  const cardWidth = availableWidth; // Full width to show only one card at a time
-  const cardSpacing = 0; // No spacing when showing one card
-  const snapInterval = cardWidth;
-
+  const containerMaxWidth = 600; // Max width for desktop/tablet
+  const containerPadding = layout.spacing.md * 2; // 16px padding on each side
+  const contentPadding = (layout.spacing.lg + layout.spacing.xs) * 2;
+  const maxContainerWidth = Math.min(screenWidth - contentPadding, containerMaxWidth);
+  const cardWidth = maxContainerWidth - containerPadding; // Account for container padding
 
   const scrollToNext = () => {
     // RIGHT arrow: current card slides RIGHT, new card comes from LEFT
     // Always go to the other card (with only 2 cards, next is always the other one)
     const nextIndex = currentCoachIndex === 0 ? 1 : 0;
-    const offset = nextIndex * snapInterval;
+    const offset = nextIndex * cardWidth;
     flatListRef.current?.scrollToOffset({ offset, animated: true });
     setCurrentCoachIndex(nextIndex);
   };
@@ -469,7 +477,7 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
     // LEFT arrow: current card slides LEFT, new card comes from RIGHT
     // Always go to the other card (with only 2 cards, prev is always the other one)
     const prevIndex = currentCoachIndex === 0 ? 1 : 0;
-    const offset = prevIndex * snapInterval;
+    const offset = prevIndex * cardWidth;
     flatListRef.current?.scrollToOffset({ offset, animated: true });
     setCurrentCoachIndex(prevIndex);
   };
@@ -529,13 +537,6 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
           <View style={styles.spotlightSection}>
             <Text style={styles.spotlightTitle}>Coach Spotlight</Text>
             <View style={styles.spotlightContainer}>
-              {/* Subtle background gradient panel */}
-              <LinearGradient
-                colors={['rgba(245, 246, 250, 0.4)', 'rgba(245, 246, 250, 0.2)', 'rgba(245, 246, 250, 0.4)']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={styles.spotlightBackground}
-              />
               {/* Left Arrow */}
               <ArrowButton
                 onPress={scrollToPrev}
@@ -549,31 +550,35 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                 ref={flatListRef}
                 data={COACHES}
                 renderItem={({ item, index }) => {
-                  const screenWidth = Dimensions.get('window').width;
-                  const horizontalPadding = layout.spacing.lg + layout.spacing.xs;
-                  const availableWidth = screenWidth - (horizontalPadding * 2);
-                  const cardWidth = availableWidth; // Full width to show only one card
                   const isActive = index === currentCoachIndex;
                   return (
-                    <CoachCard
-                      cardWidth={cardWidth}
-                      item={item}
-                      reduceMotion={reduceMotion}
-                      isActive={isActive}
-                      scrollX={scrollX}
-                      index={index}
-                    />
+                    <View style={{ width: cardWidth }}>
+                      <CoachCard
+                        cardWidth={cardWidth}
+                        item={item}
+                        reduceMotion={reduceMotion}
+                        isActive={isActive}
+                        scrollX={scrollX}
+                        index={index}
+                      />
+                    </View>
                   );
                 }}
                 keyExtractor={(item) => item.id}
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.spotlightScrollContent}
-                snapToInterval={snapInterval}
-                decelerationRate={0.88} // Smoother deceleration
+                contentContainerStyle={[
+                  styles.spotlightScrollContent,
+                  {
+                    paddingLeft: (screenWidth - cardWidth - containerPadding * 2) / 2,
+                    paddingRight: (screenWidth - cardWidth - containerPadding * 2) / 2,
+                  },
+                ]}
+                snapToInterval={cardWidth}
+                decelerationRate="fast"
                 snapToAlignment="center"
                 pagingEnabled={false}
-                disableIntervalMomentum={false}
+                disableIntervalMomentum={true}
                 onScroll={Animated.event(
                   [{ nativeEvent: { contentOffset: { x: scrollX } } }],
                   { useNativeDriver: false } // scrollX used for interpolation
@@ -582,10 +587,17 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                 accessibilityLabel="Coach spotlight carousel"
                 accessibilityHint="Swipe horizontally to browse coach profiles"
                 onMomentumScrollEnd={(event) => {
-                  const index = Math.round(event.nativeEvent.contentOffset.x / snapInterval);
+                  const offset = event.nativeEvent.contentOffset.x;
+                  const index = Math.round(offset / cardWidth);
                   const clampedIndex = Math.max(0, Math.min(index, COACHES.length - 1));
                   setCurrentCoachIndex(clampedIndex);
                 }}
+                initialScrollIndex={0}
+                getItemLayout={(data, index) => ({
+                  length: cardWidth,
+                  offset: cardWidth * index,
+                  index,
+                })}
               />
 
               {/* Right Arrow */}
@@ -606,9 +618,10 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
               <Text style={styles.bookingSubtitle}>Fill in your details to get started</Text>
             </View>
 
-            <Card style={styles.bookingCard} padding="lg" shadow="md">
-              <TouchableWithoutFeedback onPress={dismissKeyboard}>
-                <View style={styles.formContainer}>
+            <View style={styles.bookingCardWrapper}>
+              <Card style={styles.bookingCard} padding={null} shadow={null}>
+                <TouchableWithoutFeedback onPress={dismissKeyboard}>
+                  <View style={styles.formContainer}>
                 {/* Name and Phone (Side by Side) */}
                 <View style={styles.namePhoneRow}>
                   <View style={styles.nameInput}>
@@ -711,18 +724,15 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
                 </View>
 
                 {/* Book Session Button */}
-                <TouchableOpacity
-                  style={styles.bookSessionButton}
+                <BookSessionButton
                   onPress={handleSubmit}
                   disabled={isSubmitting}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="checkmark" size={layout.iconSize.sm} color={colors.neutral.white} style={styles.buttonIcon} />
-                  <Text style={styles.bookSessionButtonText}>Book Session ($60/hour)</Text>
-                </TouchableOpacity>
+                  reduceMotion={reduceMotion}
+                />
                 </View>
-              </TouchableWithoutFeedback>
-            </Card>
+                </TouchableWithoutFeedback>
+              </Card>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -822,28 +832,48 @@ const styles = StyleSheet.create({
   // Booking Section
   bookingSection: {
     marginTop: layout.spacing.xl, // 32px spacing from details card
+    alignItems: 'center', // Center on larger screens
   },
   bookingHeader: {
-    marginBottom: layout.spacing.xl, // 32px spacing before form fields for better breathing room
+    marginBottom: layout.spacing.xl, // 32px spacing before form card
+    alignItems: 'center', // Center header content
+    width: '100%',
+    maxWidth: 640, // Max width for desktop (max-w-xl equivalent)
   },
   bookingTitle: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: typography.fontSize['4xl'], // 36px - increased for stronger hierarchy
+    fontSize: typography.fontSize.h1, // 32px - bold title
     fontWeight: typography.fontWeight.bold, // 700
     color: colors.neutral.darkText,
-    lineHeight: typography.fontSize['4xl'] * typography.lineHeight.heading, // 36 * 1.3 = 46.8
+    lineHeight: typography.fontSize.h1 * typography.lineHeight.heading, // 32 * 1.3 = 41.6
     marginBottom: layout.spacing.sm, // 8px spacing between title and subtitle
+    textAlign: 'center',
   },
   bookingSubtitle: {
     fontFamily: typography.fontFamily.regular,
     fontSize: typography.fontSize.body, // 16px
     fontWeight: typography.fontWeight.normal, // 400
-    color: colors.neutral.mutedGray, // Subtle gray color matching app's tone
+    color: colors.neutral.gray[500], // Medium gray (#6B7280 equivalent)
     lineHeight: typography.fontSize.body * typography.lineHeight.body, // 16 * 1.5 = 24
+    textAlign: 'center',
+  },
+  bookingCardWrapper: {
+    width: '100%',
+    maxWidth: 640, // Max width for desktop (max-w-xl equivalent)
+    alignSelf: 'center', // Center horizontally
   },
   bookingCard: {
-    backgroundColor: colors.neutral.background, // Light gray background - matching Private Coaching card
-    borderRadius: layout.borderRadius.medium, // 16px rounded corners - matching Private Coaching card
+    backgroundColor: '#F8FAFC', // Very light subtle gray background
+    borderRadius: layout.borderRadius.xl, // Rounded-xl (16px)
+    paddingTop: layout.spacing.xl, // 32px top padding
+    paddingBottom: layout.spacing.xl, // 32px bottom padding
+    paddingHorizontal: layout.spacing.lg, // 24px side padding
+    // Premium soft shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 8,
   },
   formContainer: {
     width: '100%',
@@ -851,7 +881,7 @@ const styles = StyleSheet.create({
   namePhoneRow: {
     flexDirection: 'row',
     marginHorizontal: -layout.spacing.xs, // Negative margin for side-by-side inputs
-    // marginBottom handled by Input components - standardized spacing
+    marginBottom: layout.spacing.md, // 16px spacing between rows
   },
   nameInput: {
     flex: 1,
@@ -862,23 +892,27 @@ const styles = StyleSheet.create({
     marginHorizontal: layout.spacing.xs, // 4px spacing between inputs - symmetrical
   },
   inputText: {
-    fontSize: typography.fontSize.small, // 14px - slightly reduced for placeholder readability
+    fontSize: typography.fontSize.body, // 16px for better readability
   },
   goalsInput: {
-    minHeight: 100,
-    // marginBottom handled by Input component - standardized spacing
+    minHeight: 120, // 120-150px height for textarea
+    maxHeight: 150,
   },
   bookSessionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primary.green,
-    width: '100%', // Match input field width
-    height: layout.buttonHeight.lg, // 52px height
+    width: '100%', // Full-width
+    paddingVertical: layout.spacing.md + 4, // py-4 equivalent (~20px)
     paddingHorizontal: layout.spacing.xl, // 32px horizontal padding
-    borderRadius: layout.borderRadius.pill, // Full pill shape
-    ...layout.shadows.md, // Medium shadow
-    // marginTop removed - spacing handled by last Input component's marginBottom
+    borderRadius: layout.borderRadius.full, // Rounded-full
+    marginTop: layout.spacing.md, // 16px spacing from last input
+    // Premium shadow (will be animated)
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    elevation: 8,
   },
   buttonIcon: {
     marginRight: layout.spacing.sm, // 8px spacing between icon and text
@@ -899,143 +933,124 @@ const styles = StyleSheet.create({
   spotlightSection: {
     marginTop: layout.spacing.xl, // 32px spacing from details card
     marginBottom: layout.spacing.xl, // 32px spacing before booking section
+    alignItems: 'center', // Center on larger screens
   },
   spotlightTitle: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: typography.fontSize.h2, // 22px
+    fontSize: typography.fontSize.h1, // 32px - same size as other titles
     fontWeight: typography.fontWeight.bold, // 700
     color: colors.neutral.darkText,
-    lineHeight: typography.fontSize.h2 * typography.lineHeight.heading, // 22 * 1.3 = 28.6
+    lineHeight: typography.fontSize.h1 * typography.lineHeight.heading, // 32 * 1.3 = 41.6
     marginBottom: layout.spacing.xl, // 32px spacing before cards for better balance
+    textAlign: 'center',
   },
   spotlightContainer: {
     position: 'relative',
-    borderRadius: layout.borderRadius.lg, // 12px rounded corners
-    overflow: 'hidden',
+    borderRadius: layout.borderRadius.medium, // 16px rounded corners - matching app's global radius
+    overflow: 'visible', // Allow arrows to be visible outside
     paddingTop: layout.spacing.lg, // 24px spacing above card
     paddingBottom: layout.spacing.lg, // 24px spacing below card
+    paddingHorizontal: layout.spacing.md, // 16px horizontal padding for arrows
     marginTop: layout.spacing.md, // 16px additional spacing from title
-  },
-  spotlightBackground: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: layout.borderRadius.lg, // Match container border radius
+    width: '100%',
+    maxWidth: 600, // Max width for desktop/tablet - center horizontally
+    alignSelf: 'center', // Center container on larger screens
   },
   spotlightScrollContent: {
-    paddingHorizontal: 0, // No padding - cards are full width and centered
     paddingTop: 0, // No top padding - handled by container
   },
   coachCardWrapper: {
     marginRight: 0, // No margin - showing one card at a time
-    // Shadow applied to wrapper so it appears behind the card
+    // Premium soft shadow matching Private Coaching and Book Your Session cards
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 6,
-    elevation: 5, // Medium shadow - exactly matching Private Coaching card (shadowOpacity is animated)
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    elevation: 8,
+    // shadowOpacity is animated in the component (0.08 default, 0.12 on press)
   },
   coachCardInner: {
-    backgroundColor: colors.neutral.background, // Light gray background - matching Private Coaching card
-    borderRadius: layout.borderRadius.medium, // 16px - matching Private Coaching card
+    backgroundColor: colors.neutral.background, // Light gray background - matching Private Coaching and Book Your Session cards
+    borderRadius: layout.borderRadius.medium, // 16px - matching app's global radius
     overflow: 'hidden', // Clip content to rounded corners
   },
   coachCardContent: {
-    padding: layout.spacing.xl, // 32px padding - matching Card padding="lg"
+    paddingTop: layout.spacing.xl, // 32px top padding
+    paddingBottom: layout.spacing.xl, // 32px bottom padding
+    paddingHorizontal: layout.spacing.xl, // 32px horizontal padding
     alignItems: 'center',
     position: 'relative',
   },
+  coachPhotoContainer: {
+    marginBottom: layout.spacing.lg, // 24px spacing below photo
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   coachPhotoPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40, // Perfect circle
+    width: 96, // Larger circular image
+    height: 96,
+    borderRadius: 48, // Perfect circle
     backgroundColor: colors.neutral.white,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: layout.spacing.lg, // 24px spacing below photo for premium feel
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)', // Glass-style border
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  avatarInnerHighlight: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '50%',
-    backgroundColor: 'rgba(255, 255, 255, 0.3)', // Soft inner highlight for depth
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
+    // Soft shadow for circular image
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    shadowOpacity: 0.1,
+    elevation: 3,
   },
   divider: {
-    width: 40,
+    width: 48, // Slightly wider divider
     height: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.08)', // Very subtle divider line
-    marginBottom: layout.spacing.lg, // 24px spacing below divider
+    backgroundColor: colors.neutral.gray[300], // Light gray divider line
+    marginBottom: layout.spacing.md, // 16px spacing below divider (8/12/16px scale)
     alignSelf: 'center',
   },
   coachName: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: typography.fontSize['2xl'], // 24px - larger and more prominent
+    fontSize: typography.fontSize.xl, // 20px - bold, slightly larger
     fontWeight: typography.fontWeight.bold, // 700
     color: colors.neutral.darkText,
-    lineHeight: typography.fontSize['2xl'] * typography.lineHeight.heading, // 24 * 1.3 = 31.2
-    marginBottom: layout.spacing.sm, // 8px spacing between name and subtitle
+    lineHeight: typography.fontSize.xl * typography.lineHeight.heading, // 20 * 1.3 = 26
+    marginBottom: layout.spacing.xs, // 4px spacing between name and subtitle (8/12/16px scale)
     textAlign: 'center',
   },
   coachInfo: {
     fontFamily: typography.fontFamily.regular,
-    fontSize: typography.fontSize.sm, // 14px - smaller than before
-    fontWeight: typography.fontWeight.normal, // 400 - lighter weight
-    color: colors.neutral.mutedGray,
-    lineHeight: typography.fontSize.sm * typography.lineHeight.body, // 14 * 1.5 = 21
+    fontSize: typography.fontSize.small, // 14px - smaller gray text
+    fontWeight: typography.fontWeight.normal, // 400
+    color: colors.neutral.gray[500], // Gray text for subtitle
+    lineHeight: typography.fontSize.small * typography.lineHeight.body, // 14 * 1.5 = 21
     textAlign: 'center',
   },
   arrowButton: {
     position: 'absolute',
     top: '50%',
-    marginTop: -24, // Half of button height to center vertically
+    marginTop: -24, // Half of button height (48/2) to center vertically
     width: 48,
     height: 48,
     borderRadius: 24, // Perfect circle
-    overflow: 'hidden',
+    backgroundColor: colors.neutral.white, // White background
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.4)', // Subtle glass border
+    // Soft shadow matching app's shadow tokens
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-    shadowOpacity: 0.15,
-    elevation: 6,
+    shadowRadius: 6,
+    shadowOpacity: 0.1,
+    elevation: 4,
   },
   arrowIconContainer: {
-    position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
     height: '100%',
   },
-  arrowBlurContainer: Platform.select({
-    web: {
-      backdropFilter: 'blur(16px)',
-      WebkitBackdropFilter: 'blur(16px)',
-    } as any,
-    default: {},
-  }),
-  arrowOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)', // Glassmorphism background
-  },
-  arrowOverlayHovered: {
-    backgroundColor: 'rgba(255, 255, 255, 0.35)', // Slightly darker on hover
-  },
-  arrowOverlayPressed: {
-    backgroundColor: 'rgba(255, 255, 255, 0.4)', // Darker when pressed
-  },
   arrowLeft: {
-    left: -12, // Positioned closer to card edge for better visual connection
+    left: layout.spacing.sm, // 8px from left edge
   },
   arrowRight: {
-    right: -12, // Positioned closer to card edge for better visual connection
+    right: layout.spacing.sm, // 8px from right edge
   },
 });

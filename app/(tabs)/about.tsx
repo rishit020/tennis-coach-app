@@ -1,155 +1,216 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '@/components/ui';
 import { colors } from '@/constants/colors';
 import { layout } from '@/constants/layout';
 import { typography } from '@/constants/typography';
 
+interface CoachCardProps {
+  name: string;
+  role: string;
+  description: string;
+  certifications: string[];
+  icon: string;
+}
+
+function CoachCard({ name, role, description, certifications, icon }: CoachCardProps) {
+  return (
+    <Card style={styles.coachCard} padding="lg" shadow="md">
+      <View style={styles.coachCardContent}>
+        {/* Icon */}
+        <View style={styles.coachIconContainer}>
+          <View style={styles.coachIconCircle}>
+            <Ionicons name={icon as any} size={32} color={colors.neutral.white} />
+          </View>
+        </View>
+
+        {/* Name */}
+        <Text style={styles.coachName}>{name}</Text>
+
+        {/* Role */}
+        <Text style={styles.coachRole}>{role}</Text>
+
+        {/* Description */}
+        <Text style={styles.coachDescription}>{description}</Text>
+
+        {/* Certifications */}
+        <View style={styles.certificationsContainer}>
+          {certifications.map((cert, index) => (
+            <View key={index} style={styles.certificationBadge}>
+              <Text style={styles.certificationText}>{cert}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    </Card>
+  );
+}
+
 export default function AboutScreen() {
+  const screenWidth = Dimensions.get('window').width;
+  const maxContentWidth = 768; // Max width for desktop
+  const isTablet = screenWidth >= 600; // Tablet breakpoint
+
   const coaches = [
     {
-      id: 1,
-      name: 'Sarah Johnson',
-      credentials: 'USPTA Certified, Former WTA Player',
-      bio: 'Sarah brings 15 years of professional tennis experience and has coached players from beginner to professional level.',
-      specialties: ['Serve Technique', 'Mental Game', 'Tournament Preparation'],
-      social: {
-        instagram: '@sarahjtennis',
-        twitter: '@sarahj_coach',
-      },
+      name: 'Rishit Sharma',
+      role: 'Performance Coach',
+      description: 'Top USTA nationally ranked player with 9+ years of competitive tennis experience.',
+      certifications: ['USTA Certified', 'Nationally Ranked'],
+      icon: 'medal',
     },
     {
-      id: 2,
-      name: 'Michael Chen',
-      credentials: 'ITF Level 2 Coach, Former ATP Player',
-      bio: 'Michael specializes in advanced technique and has helped numerous players achieve their college tennis goals.',
-      specialties: ['Advanced Footwork', 'Strategy & Tactics', 'Physical Conditioning'],
-      social: {
-        instagram: '@mchen_tennis',
-        linkedin: 'michael-chen-tennis',
-      },
-    },
-    {
-      id: 3,
-      name: 'Emma Rodriguez',
-      credentials: 'USTA High Performance Coach, Sports Psychology Certified',
-      bio: 'Emma focuses on junior development and mental coaching, helping young players build confidence and resilience.',
-      specialties: ['Junior Development', 'Mental Training', 'Parent Education'],
-      social: {
-        instagram: '@emmar_tennis',
-        facebook: 'EmmaRodriguezTennis',
-      },
+      name: 'Mihir Mohan',
+      role: 'Performance Coach',
+      description: 'Top USTA nationally ranked player with 9+ years of competitive tennis experience.',
+      certifications: ['USTA Certified', 'Nationally Ranked'],
+      icon: 'trophy',
     },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Badge */}
-        <View style={styles.badgeContainer}>
-          <View style={styles.badge}>
-            <Ionicons name="star" size={16} color={colors.neutral.white} />
-            <Text style={styles.badgeText}> Elite Tennis Coaching</Text>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <View style={[styles.content, { maxWidth: maxContentWidth }]}>
+          {/* Header Section */}
+          <View style={styles.headerSection}>
+            <Text style={styles.headerTitle}>
+              About <Text style={styles.titleAccent}>TennisPro Coaching</Text>
+            </Text>
+            <Text style={styles.headerSubtitle}>
+              We're passionate about helping tennis players of all levels improve their game through personalized coaching and expert analysis from nationally ranked players.
+            </Text>
           </View>
-        </View>
 
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>
-            About <Text style={styles.titleAccent}>TennisPro Coaching</Text>
-          </Text>
-          <Text style={styles.subtitle}>
-            We're passionate about helping tennis players of all levels improve their game through personalized coaching and expert analysis from nationally ranked players.
-          </Text>
-        </View>
-
-        {/* Coach Cards */}
-        <View style={styles.coachesSection}>
-          {coaches.map((coach) => (
-            <Card key={coach.id} style={styles.coachCard}>
-              <View style={styles.coachHeader}>
-                <View style={styles.coachAvatar}>
-                  <Ionicons name="person" size={32} color={colors.primary.green} />
-                </View>
-                <View style={styles.coachInfo}>
-                  <Text style={styles.coachName}>{coach.name}</Text>
-                  <Text style={styles.coachCredentials}>{coach.credentials}</Text>
+          {/* Mission Section */}
+          <View style={styles.section}>
+            <Card style={styles.missionCard} padding="lg" shadow="md">
+              <View style={styles.missionIconContainer}>
+                <View style={styles.missionIcon}>
+                  <Ionicons name="heart" size={28} color={colors.neutral.white} />
                 </View>
               </View>
-              
-              <Text style={styles.coachBio}>{coach.bio}</Text>
-              
-              <View style={styles.specialtiesSection}>
-                <Text style={styles.specialtiesTitle}>Specialties:</Text>
-                <View style={styles.specialtiesList}>
-                  {coach.specialties.map((specialty, index) => (
-                    <View key={index} style={styles.specialtyTag}>
-                      <Text style={styles.specialtyText}>{specialty}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
+              <Text style={styles.missionTitle}>Our Mission</Text>
+              <Text style={styles.missionDescription}>
+                To provide accessible, high-quality tennis coaching that helps players develop their skills, build confidence, and achieve their goals on and off the court. We believe every player deserves expert guidance from coaches who understand the game at the highest level.
+              </Text>
+            </Card>
+          </View>
 
-              <View style={styles.socialSection}>
-                <Text style={styles.socialTitle}>Connect:</Text>
-                <View style={styles.socialLinks}>
-                  {coach.social.instagram && (
-                    <View style={styles.socialLink}>
-                      <Ionicons name="logo-instagram" size={16} color={colors.primary.green} />
-                      <Text style={styles.socialText}>{coach.social.instagram}</Text>
-                    </View>
-                  )}
-                  {coach.social.twitter && (
-                    <View style={styles.socialLink}>
-                      <Ionicons name="logo-twitter" size={16} color={colors.primary.green} />
-                      <Text style={styles.socialText}>{coach.social.twitter}</Text>
-                    </View>
-                  )}
-                  {coach.social.linkedin && (
-                    <View style={styles.socialLink}>
-                      <Ionicons name="logo-linkedin" size={16} color={colors.primary.green} />
-                      <Text style={styles.socialText}>{coach.social.linkedin}</Text>
-                    </View>
-                  )}
-                  {coach.social.facebook && (
-                    <View style={styles.socialLink}>
-                      <Ionicons name="logo-facebook" size={16} color={colors.primary.green} />
-                      <Text style={styles.socialText}>{coach.social.facebook}</Text>
-                    </View>
-                  )}
+          {/* Why Choose Us Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Why Choose Us</Text>
+            <View style={[styles.featuresGrid, !isTablet && styles.featuresGridMobile]}>
+              <View style={[styles.featureCardWrapper, !isTablet && styles.featureCardWrapperMobile]}>
+                <Card style={styles.featureCard} padding="md" shadow="sm">
+                  <View style={styles.featureIconContainer}>
+                    <Ionicons name="star" size={24} color={colors.primary.green} />
+                  </View>
+                  <Text style={styles.featureTitle}>Nationally Ranked Coaches</Text>
+                  <Text style={styles.featureDescription}>
+                    Learn from USTA nationally ranked players with proven competitive experience.
+                  </Text>
+                </Card>
+              </View>
+              <View style={[styles.featureCardWrapper, !isTablet && styles.featureCardWrapperMobile]}>
+                <Card style={styles.featureCard} padding="md" shadow="sm">
+                  <View style={styles.featureIconContainer}>
+                    <Ionicons name="videocam" size={24} color={colors.primary.green} />
+                  </View>
+                  <Text style={styles.featureTitle}>Video Analysis</Text>
+                  <Text style={styles.featureDescription}>
+                    Get detailed feedback on your technique through professional video analysis.
+                  </Text>
+                </Card>
+              </View>
+              <View style={[styles.featureCardWrapper, !isTablet && styles.featureCardWrapperMobile]}>
+                <Card style={styles.featureCard} padding="md" shadow="sm">
+                  <View style={styles.featureIconContainer}>
+                    <Ionicons name="person" size={24} color={colors.primary.green} />
+                  </View>
+                  <Text style={styles.featureTitle}>Personalized Coaching</Text>
+                  <Text style={styles.featureDescription}>
+                    Receive tailored instruction that matches your skill level and goals.
+                  </Text>
+                </Card>
+              </View>
+              <View style={[styles.featureCardWrapper, !isTablet && styles.featureCardWrapperMobile]}>
+                <Card style={styles.featureCard} padding="md" shadow="sm">
+                  <View style={styles.featureIconContainer}>
+                    <Ionicons name="calendar" size={24} color={colors.primary.green} />
+                  </View>
+                  <Text style={styles.featureTitle}>Flexible Scheduling</Text>
+                  <Text style={styles.featureDescription}>
+                    Book sessions that fit your schedule with our flexible coaching options.
+                  </Text>
+                </Card>
+              </View>
+            </View>
+          </View>
+
+          {/* Meet Our Team Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Meet Our Team</Text>
+            <View style={[styles.teamCardsContainer, !isTablet && styles.teamCardsContainerMobile]}>
+              {coaches.map((coach, index) => (
+                <View key={index} style={[styles.teamCardWrapper, !isTablet && styles.teamCardWrapperMobile]}>
+                  <CoachCard
+                    name={coach.name}
+                    role={coach.role}
+                    description={coach.description}
+                    certifications={coach.certifications}
+                    icon={coach.icon}
+                  />
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* What We Offer Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>What We Offer</Text>
+            <Card style={styles.offerCard} padding="lg" shadow="md">
+              <View style={styles.offerList}>
+                <View style={styles.offerItem}>
+                  <Ionicons name="checkmark-circle" size={20} color={colors.primary.green} />
+                  <Text style={styles.offerText}>Private one-on-one coaching sessions</Text>
+                </View>
+                <View style={styles.offerItem}>
+                  <Ionicons name="checkmark-circle" size={20} color={colors.primary.green} />
+                  <Text style={styles.offerText}>Video analysis and technique breakdown</Text>
+                </View>
+                <View style={styles.offerItem}>
+                  <Ionicons name="checkmark-circle" size={20} color={colors.primary.green} />
+                  <Text style={styles.offerText}>Strategy and game planning sessions</Text>
+                </View>
+                <View style={styles.offerItem}>
+                  <Ionicons name="checkmark-circle" size={20} color={colors.primary.green} />
+                  <Text style={styles.offerText}>Mental game and tournament preparation</Text>
+                </View>
+                <View style={styles.offerItem}>
+                  <Ionicons name="checkmark-circle" size={20} color={colors.primary.green} />
+                  <Text style={styles.offerText}>All skill levels welcome</Text>
                 </View>
               </View>
             </Card>
-          ))}
-        </View>
-
-        {/* Mission Statement */}
-        <Card style={styles.missionCard}>
-          <View style={styles.missionIcon}>
-            <Ionicons name="heart" size={32} color={colors.neutral.white} />
           </View>
-          <Text style={styles.missionTitle}>Our Mission</Text>
-          <Text style={styles.missionDescription}>
-            To provide accessible, high-quality tennis coaching that helps players develop their skills, build confidence, and achieve their goals on and off the court.
-          </Text>
-        </Card>
 
-        {/* Team Section */}
-        <View style={styles.teamSection}>
-          <Text style={styles.sectionTitle}>Meet Our Team</Text>
-          <View style={styles.teamCards}>
-            <View style={styles.teamCard}>
-              <View style={styles.teamIcon}>
-                <Ionicons name="medal" size={24} color={colors.neutral.white} />
+          {/* Call to Action Section */}
+          <View style={styles.section}>
+            <Card style={styles.ctaCard} padding="lg" shadow="md">
+              <View style={styles.ctaIconContainer}>
+                <Ionicons name="tennisball" size={32} color={colors.primary.green} />
               </View>
-            </View>
-            <View style={styles.teamCard}>
-              <View style={styles.teamIcon}>
-                <Ionicons name="trophy" size={24} color={colors.neutral.white} />
-              </View>
-            </View>
+              <Text style={styles.ctaTitle}>Ready to Elevate Your Game?</Text>
+              <Text style={styles.ctaDescription}>
+                Book a session with our nationally ranked coaches and take your tennis to the next level. Whether you're a beginner or advanced player, we're here to help you achieve your goals.
+              </Text>
+            </Card>
           </View>
         </View>
       </ScrollView>
@@ -160,148 +221,65 @@ export default function AboutScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.neutral.background,
+    backgroundColor: colors.neutral.white,
   },
-  badgeContainer: {
-    paddingHorizontal: layout.spacing.lg,
-    paddingTop: 60,
-    paddingBottom: layout.spacing.md,
+  scrollContent: {
+    flexGrow: 1,
+  },
+  content: {
+    paddingTop: layout.spacing['3xl'], // 64px
+    paddingHorizontal: layout.spacing.lg + layout.spacing.xs, // 24px
+    paddingBottom: layout.spacing['2xl'], // 48px
+    alignSelf: 'center',
+    width: '100%',
+  },
+  // Header Section
+  headerSection: {
+    marginBottom: layout.spacing['2xl'], // 48px
     alignItems: 'center',
   },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primary.green,
-    paddingHorizontal: layout.spacing.md,
-    paddingVertical: layout.spacing.sm,
-    borderRadius: layout.borderRadius.full,
-  },
-  badgeText: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.neutral.white,
-  },
-  header: {
-    paddingHorizontal: layout.spacing.lg,
-    paddingBottom: layout.spacing.xl,
-    alignItems: 'flex-start',
-  },
-  title: {
-    fontSize: typography.fontSize['3xl'],
-    fontWeight: typography.fontWeight.bold,
-    color: colors.neutral.gray[900],
-    marginBottom: layout.spacing.md,
-    textAlign: 'left',
+  headerTitle: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.fontSize.h1, // 32px
+    fontWeight: typography.fontWeight.bold, // 700
+    color: colors.neutral.darkText,
+    lineHeight: typography.fontSize.h1 * typography.lineHeight.heading, // 32 * 1.3 = 41.6
+    marginBottom: layout.spacing.md, // 16px
+    textAlign: 'center',
   },
   titleAccent: {
     color: colors.primary.green,
   },
-  subtitle: {
-    fontSize: typography.fontSize.base,
-    color: colors.neutral.gray[600],
-    textAlign: 'left',
-    lineHeight: 24,
+  headerSubtitle: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.body, // 16px
+    fontWeight: typography.fontWeight.normal, // 400
+    color: colors.neutral.gray[500],
+    lineHeight: typography.fontSize.body * typography.lineHeight.body, // 16 * 1.5 = 24
+    textAlign: 'center',
+    paddingHorizontal: layout.spacing.md,
   },
-  coachesSection: {
-    // Hidden - React Native doesn't support display: 'none'
-    height: 0,
-    overflow: 'hidden',
-    opacity: 0,
+  // Section
+  section: {
+    marginBottom: layout.spacing['2xl'], // 48px
   },
-  coachCard: {
-    marginBottom: layout.spacing.lg,
+  sectionTitle: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.fontSize['2xl'], // 24px
+    fontWeight: typography.fontWeight.bold, // 700
+    color: colors.neutral.darkText,
+    lineHeight: typography.fontSize['2xl'] * typography.lineHeight.heading, // 24 * 1.3 = 31.2
+    marginBottom: layout.spacing.lg, // 24px
+    textAlign: 'center',
   },
-  coachHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: layout.spacing.md,
-  },
-  coachAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.primary.green + '20',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: layout.spacing.md,
-  },
-  coachInfo: {
-    flex: 1,
-  },
-  coachName: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.neutral.gray[900],
-    marginBottom: layout.spacing.xs,
-  },
-  coachCredentials: {
-    fontSize: typography.fontSize.sm,
-    color: colors.primary.green,
-    fontWeight: typography.fontWeight.medium,
-  },
-  coachBio: {
-    fontSize: typography.fontSize.base,
-    color: colors.neutral.gray[600],
-    lineHeight: 22,
-    marginBottom: layout.spacing.md,
-  },
-  specialtiesSection: {
-    marginBottom: layout.spacing.md,
-  },
-  specialtiesTitle: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.neutral.gray[700],
-    marginBottom: layout.spacing.sm,
-  },
-  specialtiesList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -layout.spacing.xs / 2,
-  },
-  specialtyTag: {
-    backgroundColor: colors.primary.green + '20',
-    paddingHorizontal: layout.spacing.sm,
-    paddingVertical: layout.spacing.xs,
-    borderRadius: layout.borderRadius.sm,
-    margin: layout.spacing.xs / 2,
-  },
-  specialtyText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.primary.green,
-    fontWeight: typography.fontWeight.medium,
-  },
-  socialSection: {
-    borderTopWidth: 1,
-    borderTopColor: colors.neutral.gray[200],
-    paddingTop: layout.spacing.md,
-  },
-  socialTitle: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.neutral.gray[700],
-    marginBottom: layout.spacing.sm,
-  },
-  socialLinks: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -layout.spacing.md / 2,
-  },
-  socialLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    margin: layout.spacing.md / 2,
-  },
-  socialText: {
-    fontSize: typography.fontSize.sm,
-    color: colors.primary.green,
-    marginLeft: layout.spacing.xs,
-  },
+  // Mission Card
   missionCard: {
-    marginHorizontal: layout.spacing.lg,
-    marginBottom: layout.spacing.xl,
+    backgroundColor: '#F8FAFC', // Very light subtle gray
+    borderRadius: layout.borderRadius.xl, // 16px
     alignItems: 'center',
-    ...layout.shadows.md,
+  },
+  missionIconContainer: {
+    marginBottom: layout.spacing.lg, // 24px
   },
   missionIcon: {
     width: 64,
@@ -310,51 +288,195 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary.green,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: layout.spacing.lg,
   },
   missionTitle: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.neutral.gray[900],
-    marginBottom: layout.spacing.md,
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.fontSize.xl, // 20px
+    fontWeight: typography.fontWeight.bold, // 700
+    color: colors.neutral.darkText,
+    marginBottom: layout.spacing.md, // 16px
     textAlign: 'center',
   },
   missionDescription: {
-    fontSize: typography.fontSize.base,
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.body, // 16px
+    fontWeight: typography.fontWeight.normal, // 400
     color: colors.neutral.gray[600],
-    lineHeight: 22,
+    lineHeight: typography.fontSize.body * typography.lineHeight.body, // 16 * 1.5 = 24
     textAlign: 'center',
   },
-  teamSection: {
-    paddingHorizontal: layout.spacing.lg,
-    paddingBottom: layout.spacing.xl,
-  },
-  sectionTitle: {
-    fontSize: typography.fontSize['2xl'],
-    fontWeight: typography.fontWeight.bold,
-    color: colors.neutral.gray[900],
-    marginBottom: layout.spacing.lg,
-  },
-  teamCards: {
+  // Features Grid
+  featuresGrid: {
     flexDirection: 'row',
-    marginHorizontal: -layout.spacing.md / 2,
+    flexWrap: 'wrap',
+    marginHorizontal: -layout.spacing.sm, // Negative margin for spacing
   },
-  teamCard: {
+  featuresGridMobile: {
+    flexDirection: 'column',
+  },
+  featureCardWrapper: {
     flex: 1,
-    aspectRatio: 1,
-    backgroundColor: colors.neutral.white,
-    borderRadius: layout.borderRadius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: layout.spacing.md / 2,
-    ...layout.shadows.md,
+    minWidth: '45%', // 2 columns on larger screens
+    margin: layout.spacing.sm, // 8px margin
   },
-  teamIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  featureCardWrapperMobile: {
+    minWidth: '100%', // Full width on mobile
+  },
+  featureCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: layout.borderRadius.medium, // 16px
+    alignItems: 'center',
+    height: '100%',
+  },
+  featureIconContainer: {
+    marginBottom: layout.spacing.md, // 16px
+  },
+  featureTitle: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.fontSize.lg, // 18px
+    fontWeight: typography.fontWeight.bold, // 700
+    color: colors.neutral.darkText,
+    marginBottom: layout.spacing.sm, // 8px
+    textAlign: 'center',
+  },
+  featureDescription: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.small, // 14px
+    fontWeight: typography.fontWeight.normal, // 400
+    color: colors.neutral.gray[600],
+    lineHeight: typography.fontSize.small * typography.lineHeight.body, // 14 * 1.5 = 21
+    textAlign: 'center',
+  },
+  // Team Cards
+  teamCardsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -layout.spacing.sm, // Negative margin for spacing
+  },
+  teamCardsContainerMobile: {
+    flexDirection: 'column',
+  },
+  teamCardWrapper: {
+    flex: 1,
+    minWidth: '45%', // 2 columns on larger screens
+    margin: layout.spacing.sm, // 8px margin
+  },
+  teamCardWrapperMobile: {
+    minWidth: '100%', // Full width on mobile
+  },
+  coachCard: {
+    backgroundColor: colors.neutral.white,
+    borderRadius: layout.borderRadius.xl, // 16px
+    height: '100%',
+  },
+  coachCardContent: {
+    alignItems: 'center',
+  },
+  coachIconContainer: {
+    marginBottom: layout.spacing.lg, // 24px
+  },
+  coachIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: colors.primary.green,
     alignItems: 'center',
     justifyContent: 'center',
+    // Shadow for depth
+    shadowColor: colors.primary.green,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  coachName: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.fontSize.xl, // 20px
+    fontWeight: typography.fontWeight.bold, // 700
+    color: colors.neutral.darkText,
+    marginBottom: layout.spacing.xs, // 4px
+    textAlign: 'center',
+  },
+  coachRole: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: typography.fontSize.body, // 16px
+    fontWeight: typography.fontWeight.medium, // 500
+    color: colors.primary.green,
+    marginBottom: layout.spacing.md, // 16px
+    textAlign: 'center',
+  },
+  coachDescription: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.small, // 14px
+    fontWeight: typography.fontWeight.normal, // 400
+    color: colors.neutral.gray[600],
+    lineHeight: typography.fontSize.small * typography.lineHeight.body, // 14 * 1.5 = 21
+    marginBottom: layout.spacing.lg, // 24px
+    textAlign: 'center',
+  },
+  certificationsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginHorizontal: -layout.spacing.xs, // Negative margin for spacing
+  },
+  certificationBadge: {
+    backgroundColor: '#E8F5E9', // Light green background
+    paddingHorizontal: layout.spacing.md, // 16px
+    paddingVertical: layout.spacing.sm, // 8px
+    borderRadius: layout.borderRadius.md, // 8px
+    margin: layout.spacing.xs, // 4px
+  },
+  certificationText: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: typography.fontSize.small, // 14px
+    fontWeight: typography.fontWeight.medium, // 500
+    color: colors.primary.green,
+  },
+  // Offer Card
+  offerCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: layout.borderRadius.xl, // 16px
+  },
+  offerList: {
+    width: '100%',
+  },
+  offerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: layout.spacing.md, // 16px
+  },
+  offerText: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.body, // 16px
+    fontWeight: typography.fontWeight.normal, // 400
+    color: colors.neutral.darkText,
+    marginLeft: layout.spacing.sm, // 8px
+    flex: 1,
+  },
+  // CTA Card
+  ctaCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: layout.borderRadius.xl, // 16px
+    alignItems: 'center',
+  },
+  ctaIconContainer: {
+    marginBottom: layout.spacing.md, // 16px
+  },
+  ctaTitle: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.fontSize.xl, // 20px
+    fontWeight: typography.fontWeight.bold, // 700
+    color: colors.neutral.darkText,
+    marginBottom: layout.spacing.sm, // 8px
+    textAlign: 'center',
+  },
+  ctaDescription: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.body, // 16px
+    fontWeight: typography.fontWeight.normal, // 400
+    color: colors.neutral.gray[600],
+    lineHeight: typography.fontSize.body * typography.lineHeight.body, // 16 * 1.5 = 24
+    textAlign: 'center',
   },
 });

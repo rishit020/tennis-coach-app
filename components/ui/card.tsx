@@ -6,7 +6,7 @@ import { StyleSheet, View, ViewStyle } from 'react-native';
 interface CardProps {
   children: React.ReactNode;
   style?: ViewStyle;
-  padding?: 'sm' | 'md' | 'lg';
+  padding?: 'sm' | 'md' | 'lg' | null;
   shadow?: 'sm' | 'md' | 'lg' | null;
 }
 
@@ -18,7 +18,7 @@ export function Card({
 }: CardProps) {
   const cardStyle = [
     styles.base,
-    styles[`padding${padding.charAt(0).toUpperCase() + padding.slice(1)}`],
+    padding ? styles[`padding${padding.charAt(0).toUpperCase() + padding.slice(1)}`] : null,
     shadow ? styles[`shadow${shadow.charAt(0).toUpperCase() + shadow.slice(1)}`] : null,
     style,
   ].filter(Boolean);
