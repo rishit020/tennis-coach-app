@@ -3,7 +3,10 @@ import { colors } from '@/constants/colors';
 import { layout } from '@/constants/layout';
 import { typography } from '@/constants/typography';
 import { useKeyboardDismiss } from '@/hooks/use-keyboard-dismiss';
+import { sendContactAdminEmail } from '@/utils/email';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
 import React, { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Alert, Animated, Dimensions, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
@@ -315,8 +318,28 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Prepare email data
+      const emailData = {
+        first_name: formData.firstName,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        subject: formData.subject,
+        message: formData.message,
+      };
+
+      // Send admin notification email
+      try {
+        await sendContactAdminEmail(emailData);
+      } catch (emailError) {
+        console.error('Email error:', emailError);
+        Alert.alert(
+          'Error',
+          'Failed to send your message. Please try again or contact us directly.',
+          [{ text: 'OK' }]
+        );
+        setIsSubmitting(false);
+        return;
+      }
       
       Alert.alert(
         'Message Sent!',
@@ -395,27 +418,48 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
           <View style={[styles.sectionWrapper, { maxWidth: maxCardWidth }]}>
             <Text style={styles.sectionTitle}>Get In Touch</Text>
             <View style={styles.contactCard}>
-              <ContactInfoItem
-                icon="call"
-                title="Phone"
-                info="919-337-8859"
-                subtext="Available all week from 8 to 8"
-                onPress={handlePhonePress}
-              />
-              <ContactInfoItem
-                icon="mail"
-                title="Email"
-                info="rishit020@gmail.com"
-                subtext="We'll respond within 24 hours"
-                onPress={handleEmailPress}
-              />
-              <ContactInfoItem
-                icon="location"
-                title="Location"
-                info="3870 Cary Glen Blvd, Cary, NC 27519"
-                isLast={true}
-                onPress={handleLocationPress}
-              />
+              {Platform.OS === 'web' ? (
+                <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
+                  <LinearGradient
+                    colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                </View>
+              ) : (
+                <BlurView intensity={30} tint="light" style={StyleSheet.absoluteFill}>
+                  <LinearGradient
+                    colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                </BlurView>
+              )}
+              <View style={styles.contactCardContent}>
+                <ContactInfoItem
+                  icon="call"
+                  title="Phone"
+                  info="919-337-8859"
+                  subtext="Available 24/7"
+                  onPress={handlePhonePress}
+                />
+                <ContactInfoItem
+                  icon="mail"
+                  title="Email"
+                  info="rishit020@gmail.com"
+                  subtext="We'll respond within 24 hours"
+                  onPress={handleEmailPress}
+                />
+                <ContactInfoItem
+                  icon="location"
+                  title="Location"
+                  info="3870 Cary Glen Blvd, Cary, NC 27519"
+                  isLast={true}
+                  onPress={handleLocationPress}
+                />
+              </View>
             </View>
           </View>
 
@@ -431,12 +475,14 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
               <Text style={styles.businessHoursTitle}>We're Here for You</Text>
               <View style={styles.businessHoursList}>
                 <View style={styles.businessHoursItem}>
-                  <Text style={styles.businessHoursDay}>Monday - Sunday</Text>
-                  <Text style={styles.businessHoursTime}>8:00 AM - 8:00 PM</Text>
+                  <View style={styles.hours24Container}>
+                    <Text style={styles.hours24Text}>24/7</Text>
+                  </View>
+                  <Text style={styles.businessHoursTime}>Available Anytime</Text>
                 </View>
                 <View style={styles.businessHoursItem}>
                   <Text style={styles.businessHoursNote}>
-                    Available for coaching sessions, consultations, and inquiries
+                    Available for coaching sessions, consultations, and inquiries around the clock
                   </Text>
                 </View>
               </View>
@@ -593,7 +639,7 @@ export function ContactForm({ onSubmit }: ContactFormProps) {
             <Card style={styles.faqCard} padding="lg" shadow="md">
               <FAQItem
                 question="How quickly will I receive a response?"
-                answer="We typically respond to all inquiries within 24 hours during business hours (Monday-Sunday, 8 AM-8 PM). For urgent matters, please call us directly at 919-337-8859."
+                answer="We typically respond to all inquiries within 24 hours. We're available 24/7, so feel free to reach out anytime. For urgent matters, please call us directly at 919-337-8859."
               />
               <FAQItem
                 question="What types of coaching sessions do you offer?"
@@ -625,7 +671,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: colors.neutral.white,
+    backgroundColor: 'transparent',
   },
   scrollContent: {
     flexGrow: 1,
@@ -677,17 +723,31 @@ const styles = StyleSheet.create({
   },
   // Contact Info Card
   contactCard: {
-    backgroundColor: '#FCFCFC', // White with slight tint (#ffffff to #fcfcfc)
+    backgroundColor: 'transparent',
     borderRadius: layout.borderRadius['2xl'], // Rounded-2xl (24px)
-    paddingTop: layout.spacing.lg + layout.spacing.sm, // 28px top padding
-    paddingBottom: layout.spacing.lg + layout.spacing.sm, // 28px bottom padding
-    paddingHorizontal: layout.spacing.lg + layout.spacing.sm, // 28px side padding
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
     // Apple-style large soft shadow (0 10px 40px rgba(0,0,0,0.06))
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.06,
     shadowRadius: 40,
     elevation: 10,
+  },
+  webBlurContainer: Platform.select({
+    web: {
+      backdropFilter: 'blur(30px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    } as any,
+    default: {},
+  }),
+  contactCardContent: {
+    position: 'relative',
+    zIndex: 1,
+    paddingTop: layout.spacing.lg + layout.spacing.sm, // 28px top padding
+    paddingBottom: layout.spacing.lg + layout.spacing.sm, // 28px bottom padding
+    paddingHorizontal: layout.spacing.lg + layout.spacing.sm, // 28px side padding
   },
   contactItem: {
     flexDirection: 'row',
@@ -867,6 +927,8 @@ const styles = StyleSheet.create({
   },
   businessHoursIconContainer: {
     marginBottom: layout.spacing.md, // 16px
+    alignItems: 'center',
+    alignSelf: 'center',
   },
   businessHoursIcon: {
     width: 64,
@@ -896,18 +958,21 @@ const styles = StyleSheet.create({
     marginBottom: layout.spacing.md, // 16px
     alignItems: 'center',
   },
-  businessHoursDay: {
+  hours24Container: {
+    marginBottom: layout.spacing.sm, // 8px
+  },
+  hours24Text: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: typography.fontSize.body, // 16px
+    fontSize: typography.fontSize['2xl'] + 4, // 28px - prominent display
     fontWeight: typography.fontWeight.bold, // 700
-    color: colors.neutral.darkText,
-    marginBottom: layout.spacing.xs, // 4px
+    color: colors.primary.green,
+    letterSpacing: 1, // Slight letter spacing for modern look
   },
   businessHoursTime: {
     fontFamily: typography.fontFamily.medium,
     fontSize: typography.fontSize.body, // 16px
     fontWeight: typography.fontWeight.medium, // 500
-    color: colors.primary.green,
+    color: colors.neutral.gray[700],
   },
   businessHoursNote: {
     fontFamily: typography.fontFamily.regular,

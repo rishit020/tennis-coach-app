@@ -1,484 +1,502 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
-import React, { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, ImageBackground, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import React from 'react';
+import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AnimatedCard } from '@/components/animated-card';
+import { Card } from '@/components/ui';
 import { colors } from '@/constants/colors';
 import { layout } from '@/constants/layout';
 import { typography } from '@/constants/typography';
 
-// Design token constants for circular elements
-const HEADER_ICON_SIZE = layout.spacing['2xl'] + layout.spacing.xs; // 48
-const FEATURE_ICON_SIZE = layout.spacing['2xl'] + layout.spacing.md; // 56
-const FEATURE_ICON_SIZE_INNER = layout.iconSize.md; // 24
-const BUTTON_ICON_SIZE = layout.iconSize.sm + 2; // 22
-
 export default function HomeScreen() {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const shadowOpacity = useRef(new Animated.Value(0.3)).current;
-  const insets = useSafeAreaInsets();
-  const [reduceMotion, setReduceMotion] = useState(false);
-
-  useEffect(() => {
-    // Check for reduce motion preference
-    if (Platform.OS !== 'web') {
-      AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
-    }
-  }, []);
-
   const handleBookLesson = () => {
     router.push('/(tabs)/coaching');
   };
 
-  const handlePressIn = () => {
-    if (reduceMotion) return;
-    
-    Animated.parallel([
-      Animated.timing(scaleAnim, {
-        toValue: 0.98,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-      Animated.sequence([
-        Animated.timing(shadowOpacity, {
-          toValue: 0.5,
-          duration: 100,
-          useNativeDriver: false,
-        }),
-        Animated.timing(shadowOpacity, {
-          toValue: 0.3,
-          duration: 100,
-          useNativeDriver: false,
-        }),
-      ]),
-    ]).start();
-  };
-
-  const handlePressOut = () => {
-    if (reduceMotion) return;
-    
-    Animated.parallel([
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shadowOpacity, {
-        toValue: 0.3,
-        duration: 150,
-        useNativeDriver: false,
-      }),
-    ]).start();
-  };
-
-  // Calculate bottom padding: nav bar height (70) + spacing (24) + safe area bottom
-  const bottomPadding = 70 + layout.spacing.lg + Math.max(insets.bottom, 12);
-
   return (
-    <View style={styles.wrapper}>
-      {/* ============================================================
-          PREMIUM TENNIS COURT IMAGE BACKGROUND
-          ============================================================
-          
-          Design Philosophy:
-          - High-quality tennis court illustration as background
-          - Subtle blur effect for premium, clean aesthetic
-          - Light overlay gradient ensures text readability
-          - Maintains professional appearance while adding visual interest
-          
-          Layer Structure (bottom to top):
-          1. Tennis court background image (cover, centered)
-          2. BlurView overlay (subtle blur for depth)
-          3. Light gradient overlay (ensures text readability)
-          4. Content layer (cards with glass-like effect)
-      */}
+    <View style={styles.gradientContainer}>
+      {/* Base background */}
+      <View style={styles.baseBackground} />
       
-      <ImageBackground
-        source={require('@/assets/images/tennis-background.jpg')}
-        style={styles.backgroundImage}
-        resizeMode="cover"
-        imageStyle={styles.backgroundImageStyle}
-      >
-        {/* Blur Effect - Subtle blur for premium aesthetic
-            Intensity: 25 - provides soft focus without losing image detail
-            Tint: light - maintains brightness of the tennis court image */}
-        <BlurView 
-          intensity={25} 
-          tint="light" 
-          style={StyleSheet.absoluteFill}
-        >
-          {/* Light Gradient Overlay - Ensures text readability
-              White gradient overlay (40-60% opacity) creates clean backdrop
-              for text while preserving the tennis court aesthetic */}
-          <LinearGradient
-            colors={['rgba(255, 255, 255, 0.4)', 'rgba(255, 255, 255, 0.6)', 'rgba(255, 255, 255, 0.5)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            style={StyleSheet.absoluteFill}
-          />
-        </BlurView>
-
-        <Animated.ScrollView
-          style={styles.container}
-          showsVerticalScrollIndicator={false}>
-      <View style={[styles.content, { paddingBottom: bottomPadding }]}>
-        {/* App Header */}
-        <View style={styles.header}>
-          <BlurView intensity={20} tint="light" style={styles.headerBanner}>
-            <View style={styles.headerIconContainer}>
-              <View style={styles.headerIcon}>
-                <Ionicons name="tennisball-outline" size={layout.iconSize.md} color={colors.neutral.white} />
+      {/* Radial blob 1 - Top-left green */}
+      <LinearGradient
+        colors={['#2E7D32', '#2E7D32A0', '#2E7D3260', '#2E7D3200']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.radialBlob1}
+      />
+      
+      {/* Radial blob 2 - Center blue */}
+      <LinearGradient
+        colors={['#4A90E200', '#4A90E240', '#4A90E2A0', '#4A90E2']}
+        start={{ x: 0.3, y: 0.3 }}
+        end={{ x: 0.8, y: 0.8 }}
+        style={styles.radialBlob2}
+      />
+      
+      {/* Radial blob 3 - Top-right white/blue */}
+      <LinearGradient
+        colors={['#F5F9FF', '#F5F9FFA0', '#F5F9FF60', '#F5F9FF00']}
+        start={{ x: 1, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.radialBlob3}
+      />
+      
+      {/* Radial blob 4 - Bottom-left green/blue blend */}
+      <LinearGradient
+        colors={['#2E7D3200', '#2E7D3250', '#4A90E280', '#4A90E260']}
+        start={{ x: 0, y: 1 }}
+        end={{ x: 1, y: 0.3 }}
+        style={styles.radialBlob4}
+      />
+      
+      {/* Radial blob 5 - Bottom-right white/green */}
+      <LinearGradient
+        colors={['#F5F9FF00', '#F5F9FF40', '#2E7D3260', '#2E7D3240']}
+        start={{ x: 1, y: 1 }}
+        end={{ x: 0.2, y: 0.2 }}
+        style={styles.radialBlob5}
+      />
+      
+      {/* Radial blob 6 - Center-top white */}
+      <LinearGradient
+        colors={['#F5F9FF', '#F5F9FF80', '#F5F9FF40', '#F5F9FF00']}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={styles.radialBlob6}
+      />
+      
+      <SafeAreaView style={styles.container}>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>
+          {/* Tennis Pro Coaching Banner */}
+          <View style={styles.bannerContainer}>
+            {Platform.OS === 'web' ? (
+              <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
+                <LinearGradient
+                  colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
+              </View>
+            ) : (
+              <BlurView intensity={30} tint="light" style={StyleSheet.absoluteFill}>
+                <LinearGradient
+                  colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
+              </BlurView>
+            )}
+            <View style={styles.bannerContent}>
+              <View style={styles.bannerIconContainer}>
+                <View style={styles.bannerIcon}>
+                  <Ionicons name="tennisball-outline" size={layout.iconSize.lg} color={colors.primary.green} />
+                </View>
+              </View>
+              <View style={styles.bannerTextContainer}>
+                <Text style={styles.bannerTitle}>TennisPro Coaching</Text>
+                <Text style={styles.bannerSubtext}>Elite Tennis Coaching</Text>
               </View>
             </View>
-            <View style={styles.headerTextContainer}>
-              <Text style={styles.appName}>TennisPro Coaching</Text>
-              <Text style={styles.appTagline}>Elite Tennis Coaching</Text>
-            </View>
-          </BlurView>
-        </View>
+          </View>
 
-        {/* Main Heading */}
-        <View style={styles.headingContainer}>
-          <BlurView intensity={20} tint="light" style={styles.headingBanner}>
-            <Text style={styles.mainHeading}>
-              Elevate Your <Text style={styles.highlightedText}>Tennis</Text> Game
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>
+              Elevate Your <Text style={styles.titleAccent}>Tennis</Text> Game
             </Text>
-            <Text style={styles.description}>
+            <Text style={styles.subtitle}>
               Get personalized feedback from nationally ranked USTA players. Upload your videos and receive expert analysis.
             </Text>
-          </BlurView>
+          </View>
+
+          {/* Quick Benefits Section */}
+          <View style={styles.benefitsSection}>
+            {Platform.OS === 'web' ? (
+              <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
+                <LinearGradient
+                  colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
+              </View>
+            ) : (
+              <BlurView intensity={30} tint="light" style={StyleSheet.absoluteFill}>
+                <LinearGradient
+                  colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
+              </BlurView>
+            )}
+            <View style={styles.benefitsContent}>
+              <View style={styles.benefitItem}>
+                <Ionicons name="checkmark-circle" size={20} color={colors.primary.green} />
+                <Text style={styles.benefitText}>24-Hour Response Time</Text>
+              </View>
+              <View style={styles.benefitItem}>
+                <Ionicons name="checkmark-circle" size={20} color={colors.primary.green} />
+                <Text style={styles.benefitText}>USTA Certified Coaches</Text>
+              </View>
+              <View style={styles.benefitItem}>
+                <Ionicons name="checkmark-circle" size={20} color={colors.primary.green} />
+                <Text style={styles.benefitText}>All Skill Levels Welcome</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Feature Cards */}
+          <Card style={styles.featureCard}>
+            <View style={styles.featureContent}>
+              <View style={styles.featureIcon}>
+                <Ionicons name="videocam-outline" size={layout.iconSize.md} color={colors.neutral.white} />
+              </View>
+              <View style={styles.featureText}>
+                <Text style={styles.featureTitle}>Video Analysis</Text>
+                <Text style={styles.featureDescription}>
+                  Upload your tennis videos and receive detailed feedback within 24 hours.
+                </Text>
+              </View>
+            </View>
+          </Card>
+
+          <TouchableOpacity onPress={handleBookLesson} activeOpacity={0.8}>
+            <Card style={styles.featureCard}>
+              <View style={styles.featureContent}>
+                <View style={styles.featureIcon}>
+                  <Ionicons name="person-outline" size={layout.iconSize.md} color={colors.neutral.white} />
+                </View>
+                <View style={styles.featureText}>
+                  <Text style={styles.featureTitle}>1-on-1 Coaching</Text>
+                  <Text style={styles.featureDescription}>
+                    Book private lessons with USTA certified coaches for personalized training.
+                  </Text>
+                </View>
+              </View>
+            </Card>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={handleBookLesson} activeOpacity={0.8}>
+            <Card style={styles.featureCard}>
+              <View style={styles.featureContent}>
+                <View style={styles.featureIcon}>
+                  <Ionicons name="trophy-outline" size={layout.iconSize.md} color={colors.neutral.white} />
+                </View>
+                <View style={styles.featureText}>
+                  <Text style={styles.featureTitle}>Expert Coaches</Text>
+                  <Text style={styles.featureDescription}>
+                    Learn from nationally ranked players with 9+ years of experience.
+                  </Text>
+                </View>
+              </View>
+            </Card>
+          </TouchableOpacity>
+
+          {/* Statistics Row */}
+          <Card style={styles.statsCard}>
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>100+</Text>
+                <Text style={styles.statLabel}>Tournament Wins</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>9+</Text>
+                <Text style={styles.statLabel}>Years Experience</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>100%</Text>
+                <Text style={styles.statLabel}>Satisfaction Rate</Text>
+              </View>
+            </View>
+          </Card>
+
+          {/* Book a Lesson Button */}
+          <TouchableOpacity style={styles.bookButton} onPress={handleBookLesson} activeOpacity={0.8}>
+            <Ionicons name="calendar-outline" size={layout.iconSize.sm} color={colors.neutral.white} style={styles.bookButtonIcon} />
+            <Text style={styles.bookButtonText}>Book a Lesson</Text>
+          </TouchableOpacity>
+
+          {/* Trust Indicator */}
+          <View style={styles.trustSection}>
+            <Ionicons name="shield-checkmark" size={24} color={colors.primary.green} />
+            <Text style={styles.trustText}>Trusted by 500+ players nationwide</Text>
+          </View>
         </View>
-
-        {/* Feature Cards */}
-        <AnimatedCard style={styles.featureCard} padding="md" shadow="sm">
-          <View style={styles.featureContent}>
-            <View style={styles.featureIcon}>
-              <Ionicons name="videocam-outline" size={FEATURE_ICON_SIZE_INNER} color={colors.neutral.white} />
-            </View>
-            <View style={styles.featureText}>
-              <Text style={styles.featureTitle}>Video Analysis</Text>
-              <Text style={styles.featureDescription}>
-                Upload your tennis videos and receive detailed feedback within 24 hours.
-              </Text>
-            </View>
-          </View>
-        </AnimatedCard>
-
-        <AnimatedCard onPress={handleBookLesson} style={styles.featureCard} padding="md" shadow="sm">
-          <View style={styles.featureContent}>
-            <View style={styles.featureIcon}>
-              <Ionicons name="person-outline" size={FEATURE_ICON_SIZE_INNER} color={colors.neutral.white} />
-            </View>
-            <View style={styles.featureText}>
-              <Text style={styles.featureTitle}>1-on-1 Coaching</Text>
-              <Text style={styles.featureDescription}>
-                Book private lessons with USTA certified coaches for personalized training.
-              </Text>
-            </View>
-          </View>
-        </AnimatedCard>
-
-        <AnimatedCard onPress={handleBookLesson} style={styles.featureCard} padding="md" shadow="sm">
-          <View style={styles.featureContent}>
-            <View style={styles.featureIcon}>
-              <Ionicons name="trophy-outline" size={FEATURE_ICON_SIZE_INNER} color={colors.neutral.white} />
-            </View>
-            <View style={styles.featureText}>
-              <Text style={styles.featureTitle}>Expert Coaches</Text>
-              <Text style={styles.featureDescription}>
-                Learn from nationally ranked players with 9+ years of experience.
-              </Text>
-            </View>
-          </View>
-        </AnimatedCard>
-
-        {/* Statistics Row */}
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>100+</Text>
-            <Text style={styles.statLabel}>Tournament Wins</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>9+</Text>
-            <Text style={styles.statLabel}>Years Experience</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>100%</Text>
-            <Text style={styles.statLabel}>Satisfaction Rate</Text>
-          </View>
-        </View>
-
-        {/* Book a Lesson Button */}
-        <View style={styles.bookButtonContainer}>
-          <Animated.View
-            style={[
-              {
-                transform: [{ scale: scaleAnim }],
-              },
-            ]}>
-            <Animated.View
-              style={[
-                {
-                  // Shadow properties must be on the animated view
-                  shadowColor: colors.primary.green,
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: reduceMotion ? 0.3 : shadowOpacity,
-                  shadowRadius: 12,
-                  elevation: 6,
-                },
-              ]}>
-              <TouchableOpacity
-                style={styles.bookButton}
-                onPress={handleBookLesson}
-                onPressIn={handlePressIn}
-                onPressOut={handlePressOut}
-                activeOpacity={1}>
-                <Ionicons name="calendar-outline" size={BUTTON_ICON_SIZE} color={colors.neutral.white} style={styles.bookButtonIcon} />
-                <Text style={styles.bookButtonText}>Book a Lesson</Text>
-              </TouchableOpacity>
-            </Animated.View>
-          </Animated.View>
-        </View>
-      </View>
-        </Animated.ScrollView>
-      </ImageBackground>
+        </ScrollView>
+      </SafeAreaView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
+  gradientContainer: {
     flex: 1,
-    backgroundColor: '#F0F7F4', // Fallback color if image fails to load
+    position: 'relative',
+    overflow: 'hidden',
   },
-  // Tennis Court Background Image
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
+  baseBackground: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#F5F9FF',
   },
-  backgroundImageStyle: {
-    // Image-specific styling
-    opacity: 1, // Full opacity - blur and overlay handle the softening
+  radialBlob1: {
+    position: 'absolute',
+    top: -200,
+    left: -200,
+    width: 600,
+    height: 600,
+    borderRadius: 300,
+    opacity: 0.5,
+  },
+  radialBlob2: {
+    position: 'absolute',
+    top: 200,
+    left: 100,
+    width: 500,
+    height: 500,
+    borderRadius: 250,
+    opacity: 0.45,
+  },
+  radialBlob3: {
+    position: 'absolute',
+    top: -150,
+    right: -150,
+    width: 550,
+    height: 550,
+    borderRadius: 275,
+    opacity: 0.4,
+  },
+  radialBlob4: {
+    position: 'absolute',
+    bottom: -200,
+    left: -150,
+    width: 600,
+    height: 600,
+    borderRadius: 300,
+    opacity: 0.5,
+  },
+  radialBlob5: {
+    position: 'absolute',
+    bottom: -150,
+    right: -200,
+    width: 550,
+    height: 550,
+    borderRadius: 275,
+    opacity: 0.45,
+  },
+  radialBlob6: {
+    position: 'absolute',
+    top: 100,
+    left: 50,
+    width: 400,
+    height: 400,
+    borderRadius: 200,
+    opacity: 0.35,
   },
   container: {
     flex: 1,
-    backgroundColor: 'transparent', // Transparent to show background image
+    backgroundColor: 'transparent',
   },
   content: {
-    paddingTop: layout.spacing['3xl'], // 64px - multiple of 16px for consistent rhythm
-    paddingHorizontal: layout.spacing.lg + layout.spacing.xs, // 24px - premium horizontal margin using tokens
-    backgroundColor: 'transparent', // Transparent to show premium background
-    // paddingBottom is calculated dynamically based on nav bar height and safe area
+    paddingTop: layout.spacing.md,
+    paddingHorizontal: layout.spacing.lg,
+    paddingBottom: 120, // Increased bottom padding to ensure button is fully visible
   },
-  header: {
-    marginBottom: layout.spacing['2xl'], // 48px - consistent major section spacing
-    alignItems: 'center',
-    justifyContent: 'center',
+  bannerContainer: {
+    marginBottom: layout.spacing.xl,
+    borderRadius: layout.borderRadius.xl,
+    overflow: 'hidden',
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    ...layout.shadows.md,
   },
-  headerBanner: {
+  webBlurContainer: Platform.select({
+    web: {
+      backdropFilter: 'blur(30px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    } as any,
+    default: {},
+  }),
+  bannerContent: {
+    position: 'relative',
+    zIndex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: layout.spacing.md,
     paddingHorizontal: layout.spacing.lg,
-    borderRadius: layout.borderRadius.xl,
-    backgroundColor: 'rgba(255, 255, 255, 0.6)', // Glass morphism background
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
-  headerIconContainer: {
+  bannerIconContainer: {
     marginRight: layout.spacing.md,
   },
-  headerIcon: {
-    width: HEADER_ICON_SIZE,
-    height: HEADER_ICON_SIZE,
-    borderRadius: HEADER_ICON_SIZE / 2, // Perfect circle: half of width/height
-    backgroundColor: colors.primary.green,
+  bannerIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primary.green + '20',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerTextContainer: {
-    alignItems: 'center',
+  bannerTextContainer: {
+    flex: 1,
   },
-  appName: {
-    fontFamily: typography.fontFamily.bold,
-    fontSize: typography.fontSize.h2, // H2: 22
-    fontWeight: typography.fontWeight.bold, // 700
+  bannerTitle: {
+    fontSize: typography.fontSize.h2,
+    fontWeight: typography.fontWeight.bold,
     color: colors.primary.green,
-    lineHeight: typography.fontSize.h2 * typography.lineHeight.heading, // 22 * 1.3 = 28.6
-    marginBottom: layout.spacing.xs, // 4px - tight spacing between name and tagline
-    textAlign: 'center',
-    textShadowColor: 'rgba(255, 255, 255, 0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    marginBottom: layout.spacing.xs / 2,
   },
-  appTagline: {
-    fontFamily: typography.fontFamily.medium,
-    fontSize: typography.fontSize.small, // Small: 14
-    fontWeight: typography.fontWeight.semibold, // 600 - bolder for readability
-    color: colors.neutral.darkText, // Darker for better contrast
-    lineHeight: typography.fontSize.small * typography.lineHeight.body, // 14 * 1.5 = 21
-    textAlign: 'center',
-    textShadowColor: 'rgba(255, 255, 255, 0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+  bannerSubtext: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.neutral.gray[600],
   },
-  headingContainer: {
-    marginBottom: layout.spacing['2xl'], // 48px - consistent major section spacing
+  header: {
+    paddingBottom: layout.spacing.xl,
     alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
   },
-  headingBanner: {
-    paddingVertical: layout.spacing.xl,
-    paddingHorizontal: layout.spacing.lg,
-    borderRadius: layout.borderRadius.xl,
-    backgroundColor: 'rgba(255, 255, 255, 0.6)', // Glass morphism background
+  title: {
+    fontSize: typography.fontSize['3xl'],
+    fontWeight: typography.fontWeight.bold,
+    color: colors.neutral.gray[900],
+    marginBottom: layout.spacing.md,
+    textAlign: 'center',
+  },
+  titleAccent: {
+    color: colors.primary.green,
+  },
+  subtitle: {
+    fontSize: typography.fontSize.base,
+    color: colors.neutral.gray[500],
+    textAlign: 'center',
+    lineHeight: 24,
+    paddingHorizontal: layout.spacing.md,
+  },
+  benefitsSection: {
+    marginBottom: layout.spacing.xl,
+    borderRadius: layout.borderRadius.lg,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    ...layout.shadows.md,
+  },
+  benefitsContent: {
+    position: 'relative',
+    zIndex: 1,
+    paddingVertical: layout.spacing.lg,
+    paddingHorizontal: layout.spacing.md,
+  },
+  benefitItem: {
+    flexDirection: 'row',
     alignItems: 'center',
-    maxWidth: '90%',
+    marginBottom: layout.spacing.sm,
   },
-  mainHeading: {
-    fontFamily: typography.fontFamily.bold,
-    fontSize: typography.fontSize.h1, // H1: 32 (using standard scale, keeping premium look)
-    fontWeight: typography.fontWeight.bold, // 700
-    color: colors.neutral.darkText,
-    lineHeight: typography.fontSize.h1 * typography.lineHeight.heading, // 32 * 1.3 = 41.6
-    marginBottom: layout.spacing.md, // 16px - multiple of 16px
-    textAlign: 'center',
-    letterSpacing: -0.5, // Design-specific value for premium look
-    textShadowColor: 'rgba(255, 255, 255, 0.9)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+  benefitItemLast: {
+    marginBottom: 0,
   },
-  highlightedText: {
-    fontFamily: typography.fontFamily.bold,
-    color: colors.primary.green,
-    letterSpacing: -0.5, // Inherit letter spacing from parent
-    textShadowColor: 'rgba(255, 255, 255, 0.9)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
-  description: {
-    fontFamily: typography.fontFamily.medium,
-    fontSize: typography.fontSize.body, // Body: 16
-    fontWeight: typography.fontWeight.semibold, // 600 - bolder for readability
-    color: colors.neutral.darkText, // Darker for better contrast
-    lineHeight: typography.fontSize.body * typography.lineHeight.body, // 16 * 1.5 = 24
-    textAlign: 'center',
-    maxWidth: 320, // Optimal reading width for better readability
-    textShadowColor: 'rgba(255, 255, 255, 0.8)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+  benefitText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.neutral.gray[700],
+    marginLeft: layout.spacing.sm,
+    fontWeight: typography.fontWeight.medium,
   },
   featureCard: {
-    marginBottom: layout.spacing.xl, // 32px - consistent spacing between cards (multiple of 16px)
-    borderRadius: layout.borderRadius.medium, // 16px for premium feel
-    minHeight: layout.spacing.xxl + layout.spacing.lg, // 104px - uniform card height using tokens
-    // Liquid glass effect: more transparent for see-through appearance
-    backgroundColor: 'rgba(255, 255, 255, 0.7)', // More transparent for glass morphism
-    overflow: 'hidden', // Required for BlurView to work properly
-    // Shadow is handled by Card component and AnimatedCard animation
+    marginBottom: layout.spacing.lg,
+    borderRadius: layout.borderRadius.card,
+    ...layout.shadows.md,
   },
   featureContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   featureIcon: {
-    width: FEATURE_ICON_SIZE,
-    height: FEATURE_ICON_SIZE,
-    borderRadius: FEATURE_ICON_SIZE / 2, // Perfect circle: half of width/height
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: colors.primary.green,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: layout.spacing.md, // Reduced from lg for tighter spacing
-    flexShrink: 0, // Prevent icon from shrinking
+    marginRight: layout.spacing.md,
   },
   featureText: {
     flex: 1,
-    justifyContent: 'center', // Vertically center text content
   },
   featureTitle: {
-    fontFamily: typography.fontFamily.bold,
-    fontSize: typography.fontSize.h2, // H2: 22
-    fontWeight: typography.fontWeight.bold, // 700
-    color: colors.neutral.darkText,
-    lineHeight: typography.fontSize.h2 * typography.lineHeight.heading, // 22 * 1.3 = 28.6
-    marginBottom: layout.spacing.xs, // 4px - tight spacing between title and description
+    fontSize: typography.fontSize.xl,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.neutral.gray[900],
+    marginBottom: layout.spacing.xs,
   },
   featureDescription: {
-    fontFamily: typography.fontFamily.medium,
-    fontSize: typography.fontSize.body, // Body: 16
-    fontWeight: typography.fontWeight.medium, // 500 - bolder for readability on glass
-    color: colors.neutral.darkText, // Darker for better contrast on transparent background
-    lineHeight: typography.fontSize.body * typography.lineHeight.body, // 16 * 1.5 = 24
+    fontSize: typography.fontSize.base,
+    color: colors.neutral.gray[500],
+    lineHeight: 22,
+  },
+  statsCard: {
+    marginBottom: layout.spacing.lg,
+    borderRadius: layout.borderRadius.card,
+    ...layout.shadows.md,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    // marginTop removed - spacing comes from last feature card's marginBottom
-    marginBottom: layout.spacing.xl, // 32px - uniform spacing matching cards
-    paddingVertical: layout.spacing.xl, // 32px vertical padding for breathing room
-    paddingHorizontal: layout.spacing.md, // 16px internal padding
-    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Liquid glass: more transparent
-    borderRadius: layout.borderRadius.medium, // 16px rounded corners
-    marginHorizontal: -layout.spacing.xs, // Slight edge-to-edge feel while maintaining padding
-    overflow: 'hidden', // Required for BlurView
-    // Subtle border for definition
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    paddingVertical: layout.spacing.md,
   },
   statItem: {
     alignItems: 'center',
     flex: 1,
   },
   statNumber: {
-    fontFamily: typography.fontFamily.bold,
     fontSize: typography.fontSize['3xl'],
-    fontWeight: typography.fontWeight.bold, // 700
+    fontWeight: typography.fontWeight.bold,
     color: colors.primary.green,
-    lineHeight: typography.fontSize['3xl'] * typography.lineHeight.heading, // 30 * 1.3 = 39
     marginBottom: layout.spacing.xs,
   },
   statLabel: {
-    fontFamily: typography.fontFamily.regular,
-    fontSize: typography.fontSize.small, // Small: 14
-    fontWeight: typography.fontWeight.normal, // 400
-    color: colors.neutral.darkText,
-    lineHeight: typography.fontSize.small * typography.lineHeight.body, // 14 * 1.5 = 21
+    fontSize: typography.fontSize.sm,
+    color: colors.neutral.gray[900],
     textAlign: 'center',
-  },
-  bookButtonContainer: {
-    // marginTop removed - spacing comes from statsRow's marginBottom
-    marginBottom: layout.spacing['2xl'], // 48px - keep bottom spacing for nav bar clearance
   },
   bookButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primary.green,
-    height: 56, // ~56px height as specified
+    paddingVertical: layout.spacing.md + 4,
     paddingHorizontal: layout.spacing.xl,
-    borderRadius: layout.borderRadius.pill, // Full pill shape (radius 999)
-    width: '100%', // Full-width
-    // Shadow is handled by the animated wrapper above
+    borderRadius: layout.borderRadius.full,
+    marginTop: layout.spacing.lg,
+    marginBottom: layout.spacing.xl,
+    ...layout.shadows.sm,
   },
   bookButtonIcon: {
-    marginRight: layout.spacing.sm, // Small spacing between icon and text
+    marginRight: layout.spacing.sm,
   },
   bookButtonText: {
-    fontFamily: typography.fontFamily.bold,
-    fontSize: typography.fontSize.body, // Body: 16
-    fontWeight: typography.fontWeight.bold, // 700
+    fontSize: typography.fontSize.base,
+    fontWeight: typography.fontWeight.bold,
     color: colors.neutral.white,
-    lineHeight: typography.fontSize.body * typography.lineHeight.body, // 16 * 1.5 = 24
+  },
+  trustSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: layout.spacing.md,
+    paddingHorizontal: layout.spacing.lg,
+    marginBottom: layout.spacing.lg,
+  },
+  trustText: {
+    fontSize: typography.fontSize.sm,
+    color: colors.neutral.gray[600],
+    marginLeft: layout.spacing.sm,
+    fontWeight: typography.fontWeight.medium,
   },
 });

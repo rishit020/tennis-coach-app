@@ -101,13 +101,13 @@ export function GlassmorphicTabBar({ state, descriptors, navigation }: BottomTab
             />
           </View>
         ) : (
-          <BlurView intensity={25} tint="light" style={StyleSheet.absoluteFill}>
+          <BlurView intensity={15} tint="light" style={StyleSheet.absoluteFill}>
             {/* Semi-transparent white overlay */}
             <View style={styles.overlay} />
             
             {/* Inner highlight gradient */}
             <LinearGradient
-              colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)']}
+              colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0.1)']}
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
               style={StyleSheet.absoluteFill}
@@ -178,26 +178,26 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     maxWidth: 600, // Max width for larger screens
-    height: 70, // Taller to accommodate icons and labels
-    borderRadius: 35, // Rounded pill shape (half of height)
+    height: 60, // Reduced height for less distraction
+    borderRadius: 30, // Rounded pill shape (half of height)
     overflow: 'hidden',
-    // Soft shadow for floating appearance
+    // Softer shadow for less distraction
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 6,
   },
   webBlurContainer: Platform.select({
     web: {
-      backdropFilter: 'blur(25px)',
-      WebkitBackdropFilter: 'blur(25px)',
+      backdropFilter: 'blur(15px)',
+      WebkitBackdropFilter: 'blur(15px)',
     } as any,
     default: {},
   }),
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   tabsContainer: {
     flexDirection: 'row',
@@ -210,8 +210,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    minHeight: 70,
+    paddingVertical: 8,
+    minHeight: 60,
   },
   iconContainer: {
     alignItems: 'center',

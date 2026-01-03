@@ -58,7 +58,7 @@ export const Input = forwardRef<TextInput, InputProps>(({
         onBlur={handleBlur}
         multiline={multiline}
         numberOfLines={numberOfLines}
-        placeholderTextColor={colors.neutral.gray[500]} // Darker placeholder for better readability
+        placeholderTextColor={colors.neutral.gray[600]} // Darker placeholder for better readability on transparent background
         {...props}
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
@@ -73,10 +73,12 @@ const styles = StyleSheet.create({
     marginBottom: layout.spacing.md,
   },
   label: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium, // Medium weight
-    color: '#374151', // Slightly darker (#374151)
+    fontSize: typography.fontSize.xs, // 12px
+    fontWeight: typography.fontWeight.semibold, // Semi-bold
+    color: colors.neutral.gray[900], // High contrast
     marginBottom: layout.spacing.xs + 2, // 6-8px spacing above inputs
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.5, // Generous letter-spacing
   },
   required: {
     color: colors.semantic.error,
@@ -85,26 +87,29 @@ const styles = StyleSheet.create({
   },
   input: {
     height: layout.inputHeight.md,
-    borderWidth: 1,
-    borderColor: '#E5E7EB', // Slightly darker border for better definition
-    borderRadius: layout.borderRadius.lg, // Rounded-lg for premium feel
-    paddingHorizontal: layout.spacing.md, // py-3 px-4 equivalent
-    paddingVertical: layout.spacing.sm + 2, // ~12px vertical padding
-    fontSize: typography.fontSize.body, // 16px
+    borderWidth: 1.5, // Slightly thicker for better visibility
+    borderColor: 'rgba(255, 255, 255, 0.55)', // More visible border while maintaining glass aesthetic
+    borderRadius: 12, // 12px border radius
+    paddingHorizontal: 16, // 16px left/right
+    paddingVertical: 12, // 12px top/bottom
+    fontSize: 16, // 16px to prevent zooming on mobile
     color: colors.neutral.gray[900],
-    backgroundColor: colors.neutral.white,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)', // More shaded for better contrast
+    fontFamily: typography.fontFamily.regular,
   },
   multiline: {
     height: 'auto',
     minHeight: 150, // 150-180px height for textarea
     maxHeight: 180,
     textAlignVertical: 'top',
-    paddingTop: layout.spacing.md,
-    paddingBottom: layout.spacing.md,
+    paddingTop: 12, // 12px top
+    paddingBottom: 12, // 12px bottom
+    paddingHorizontal: 16, // 16px left/right
   },
   focused: {
     borderColor: colors.primary.green,
-    borderWidth: 2,
+    borderWidth: 1.5, // Consistent with default border width
+    backgroundColor: 'rgba(255, 255, 255, 0.5)', // More opaque on focus for better visibility
     // Focus ring effect with green at 0.3 opacity
     shadowColor: colors.primary.green,
     shadowOffset: { width: 0, height: 0 },

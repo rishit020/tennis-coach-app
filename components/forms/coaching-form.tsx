@@ -1,11 +1,14 @@
-import { Button, Card, Input } from '@/components/ui';
+import { Card, Input } from '@/components/ui';
 import { colors } from '@/constants/colors';
 import { layout } from '@/constants/layout';
 import { typography } from '@/constants/typography';
 import { useKeyboardDismiss } from '@/hooks/use-keyboard-dismiss';
+import { sendCoachingAdminEmail, sendCoachingUserEmail } from '@/utils/email';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Alert, Animated, Dimensions, FlatList, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { AccessibilityInfo, Alert, Animated, Dimensions, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface CoachingFormData {
@@ -114,58 +117,71 @@ function BookSessionButton({ onPress, disabled, reduceMotion }: BookSessionButto
 
   const handlePressIn = () => {
     if (reduceMotion || disabled) return;
-    Animated.parallel([
-      Animated.spring(scaleAnim, {
-        toValue: 0.97,
-        useNativeDriver: true,
-        tension: 300,
-        friction: 20,
-      }),
-      Animated.timing(shadowOpacity, {
-        toValue: 0.2,
-        duration: 140,
-        useNativeDriver: false,
-      }),
-    ]).start();
+    // Animate scale with native driver
+    Animated.spring(scaleAnim, {
+      toValue: 0.97,
+      useNativeDriver: true,
+      tension: 300,
+      friction: 20,
+    }).start();
+    // Animate shadow separately with non-native driver
+    Animated.timing(shadowOpacity, {
+      toValue: 0.2,
+      duration: 140,
+      useNativeDriver: false,
+    }).start();
   };
 
   const handlePressOut = () => {
     if (reduceMotion || disabled) return;
-    Animated.parallel([
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        useNativeDriver: true,
-        tension: 300,
-        friction: 20,
-      }),
-      Animated.timing(shadowOpacity, {
-        toValue: 0.15,
-        duration: 140,
-        useNativeDriver: false,
-      }),
-    ]).start();
+    // Animate scale with native driver
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 300,
+      friction: 20,
+    }).start();
+    // Animate shadow separately with non-native driver
+    Animated.timing(shadowOpacity, {
+      toValue: 0.15,
+      duration: 140,
+      useNativeDriver: false,
+    }).start();
   };
 
   return (
     <Animated.View
       style={[
         {
-          transform: [{ scale: scaleAnim }],
+          // Shadow properties (non-native driver)
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowRadius: 12,
           shadowOpacity: reduceMotion ? 0.15 : shadowOpacity,
+          elevation: 8,
         },
       ]}
     >
-      <TouchableOpacity
-        onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        disabled={disabled}
-        activeOpacity={1}
-        style={styles.bookSessionButton}
+      <Animated.View
+        style={[
+          {
+            // Transform properties (native driver)
+            transform: [{ scale: scaleAnim }],
+          },
+        ]}
       >
-        <Ionicons name="checkmark" size={layout.iconSize.sm} color={colors.neutral.white} style={styles.buttonIcon} />
-        <Text style={styles.bookSessionButtonText}>Book Session ($60/hour)</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={onPress}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          disabled={disabled}
+          activeOpacity={1}
+          style={styles.bookSessionButton}
+        >
+          <Ionicons name="checkmark" size={layout.iconSize.sm} color={colors.neutral.white} style={styles.buttonIcon} />
+          <Text style={styles.bookSessionButtonText}>Book Session ($40/hour)</Text>
+        </TouchableOpacity>
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -285,6 +301,25 @@ function CoachCard({ cardWidth, item, reduceMotion, isActive, scrollX, index }: 
           ]}
         >
           <View style={styles.coachCardInner}>
+            {Platform.OS === 'web' ? (
+              <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
+                <LinearGradient
+                  colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
+              </View>
+            ) : (
+              <BlurView intensity={30} tint="light" style={StyleSheet.absoluteFill}>
+                <LinearGradient
+                  colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
+              </BlurView>
+            )}
             <View style={styles.coachCardContent}>
               <View style={styles.coachPhotoContainer} accessibilityLabel={`${item.name} profile photo`}>
                 <View style={styles.coachPhotoPlaceholder}>
@@ -430,12 +465,40 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Prepare email data
+      const emailData = {
+        full_name: formData.fullName,
+        phone: formData.phone,
+        email: formData.email,
+        session_type: formData.sessionType || 'Private Coaching Session',
+        goals: formData.goals || undefined,
+      };
+
+      // Send emails
+      try {
+        // Send admin notification email
+        await sendCoachingAdminEmail(emailData);
+        
+        // Send user confirmation email
+        await sendCoachingUserEmail(emailData);
+      } catch (emailError) {
+        console.error('Email error:', emailError);
+        // Don't block submission if email fails, but show a warning
+        Alert.alert(
+          'Submission Successful',
+          'Your coaching session request has been submitted, but there was an issue sending the confirmation email. We\'ll still contact you soon to confirm the details.',
+          [{ text: 'OK' }]
+        );
+        // Reset form and return early
+        setFormData({ fullName: '', phone: '', email: '', sessionType: '', goals: '' });
+        setErrors({});
+        setIsSubmitting(false);
+        return;
+      }
       
       Alert.alert(
         'Session Booked!',
-        'Your coaching session has been booked successfully. We\'ll contact you soon to confirm the details.',
+        'Your coaching session has been booked successfully. You should receive a confirmation email shortly, and we\'ll contact you soon to confirm the details.',
         [{ text: 'OK' }]
       );
       
@@ -519,7 +582,7 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
               <Text style={styles.coachingTitle}>Private Coaching</Text>
 
               {/* Price */}
-              <Text style={styles.price}>$60/hour</Text>
+              <Text style={styles.price}>$40/hour</Text>
 
               {/* Features List */}
               <View style={styles.featuresList}>
@@ -616,6 +679,42 @@ export function CoachingForm({ onSubmit }: CoachingFormProps) {
             <View style={styles.bookingHeader}>
               <Text style={styles.bookingTitle}>Book Your Session</Text>
               <Text style={styles.bookingSubtitle}>Fill in your details to get started</Text>
+            </View>
+
+            {/* Payment Info Card */}
+            <View style={styles.paymentInfoCardWrapper}>
+              <View style={styles.paymentInfoCard}>
+                {Platform.OS === 'web' ? (
+                  <View style={[StyleSheet.absoluteFill, styles.webBlurContainer]}>
+                    <LinearGradient
+                      colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 0, y: 1 }}
+                      style={StyleSheet.absoluteFill}
+                    />
+                  </View>
+                ) : (
+                  <BlurView intensity={30} tint="light" style={StyleSheet.absoluteFill}>
+                    <LinearGradient
+                      colors={['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.2)', 'rgba(255,255,255,0.1)']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 0, y: 1 }}
+                      style={StyleSheet.absoluteFill}
+                    />
+                  </BlurView>
+                )}
+                <View style={styles.paymentInfoContent}>
+                  <View style={styles.paymentInfoIconContainer}>
+                    <View style={styles.paymentInfoIcon}>
+                      <Ionicons name="information-circle" size={24} color={colors.primary.green} />
+                    </View>
+                  </View>
+                  <Text style={styles.paymentInfoTitle}>No Payment Required</Text>
+                  <Text style={styles.paymentInfoText}>
+                    Submitting this form simply notifies us of your interest. We'll contact you to confirm your session details, and payment will be handled in person at the time of your lesson.
+                  </Text>
+                </View>
+              </View>
             </View>
 
             <View style={styles.bookingCardWrapper}>
@@ -746,7 +845,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: colors.neutral.white,
+    backgroundColor: 'transparent',
   },
   scrollContent: {
     flexGrow: 1,
@@ -857,6 +956,63 @@ const styles = StyleSheet.create({
     lineHeight: typography.fontSize.body * typography.lineHeight.body, // 16 * 1.5 = 24
     textAlign: 'center',
   },
+  // Payment Info Card
+  paymentInfoCardWrapper: {
+    width: '100%',
+    maxWidth: 640, // Max width for desktop (max-w-xl equivalent)
+    alignSelf: 'center',
+    marginBottom: layout.spacing.lg, // 24px spacing before booking form
+  },
+  paymentInfoCard: {
+    backgroundColor: 'transparent',
+    borderRadius: layout.borderRadius.xl, // 16px rounded corners
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    // Soft shadow matching glassmorphic theme
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  paymentInfoContent: {
+    position: 'relative',
+    zIndex: 1,
+    paddingTop: layout.spacing.lg, // 24px top padding
+    paddingBottom: layout.spacing.lg, // 24px bottom padding
+    paddingHorizontal: layout.spacing.lg, // 24px side padding
+    alignItems: 'center',
+  },
+  paymentInfoIconContainer: {
+    marginBottom: layout.spacing.md, // 16px spacing below icon
+    alignItems: 'center',
+  },
+  paymentInfoIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24, // Perfect circle
+    backgroundColor: 'rgba(46, 125, 50, 0.1)', // Light green background with transparency
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  paymentInfoTitle: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: typography.fontSize.lg, // 18px
+    fontWeight: typography.fontWeight.bold, // 700
+    color: colors.neutral.darkText,
+    lineHeight: typography.fontSize.lg * typography.lineHeight.heading, // 18 * 1.3 = 23.4
+    marginBottom: layout.spacing.sm, // 8px spacing
+    textAlign: 'center',
+  },
+  paymentInfoText: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.body, // 16px
+    fontWeight: typography.fontWeight.normal, // 400
+    color: colors.neutral.darkText,
+    lineHeight: typography.fontSize.body * typography.lineHeight.body, // 16 * 1.5 = 24
+    textAlign: 'center',
+  },
   bookingCardWrapper: {
     width: '100%',
     maxWidth: 640, // Max width for desktop (max-w-xl equivalent)
@@ -908,11 +1064,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: layout.spacing.xl, // 32px horizontal padding
     borderRadius: layout.borderRadius.full, // Rounded-full
     marginTop: layout.spacing.md, // 16px spacing from last input
-    // Premium shadow (will be animated)
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 12,
-    elevation: 8,
+    // Shadow properties moved to outer Animated.View for animation
   },
   buttonIcon: {
     marginRight: layout.spacing.sm, // 8px spacing between icon and text
@@ -969,16 +1121,26 @@ const styles = StyleSheet.create({
     // shadowOpacity is animated in the component (0.08 default, 0.12 on press)
   },
   coachCardInner: {
-    backgroundColor: colors.neutral.background, // Light gray background - matching Private Coaching and Book Your Session cards
+    backgroundColor: 'transparent',
     borderRadius: layout.borderRadius.medium, // 16px - matching app's global radius
     overflow: 'hidden', // Clip content to rounded corners
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
   },
+  webBlurContainer: Platform.select({
+    web: {
+      backdropFilter: 'blur(30px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+    } as any,
+    default: {},
+  }),
   coachCardContent: {
+    position: 'relative',
+    zIndex: 1,
     paddingTop: layout.spacing.xl, // 32px top padding
     paddingBottom: layout.spacing.xl, // 32px bottom padding
     paddingHorizontal: layout.spacing.xl, // 32px horizontal padding
     alignItems: 'center',
-    position: 'relative',
   },
   coachPhotoContainer: {
     marginBottom: layout.spacing.lg, // 24px spacing below photo
